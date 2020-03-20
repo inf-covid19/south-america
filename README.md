@@ -39,3 +39,26 @@ Requisitos mínimos do projeto:
 - pandas 0.25.3
 - seaborn 0.9.0
 
+## Conjunto de dados:
+
+Basicamente temos dois _datasets_, o primeiro é um conjunto de metadados de papers científicos relacionados 
+ao coronavirus, obtidos no [COVID-19 Open Research Dataset, CORD-19](https://pages.semanticscholar.org/coronavirus-research).
+São 13.202 papers publicados ou pré-prints até a data de 13-03-2020.
+
+Esse conjunto, fica localizado no diretório data e são compostos de arquivos json compactados em .tar.gz. 
+O arquivo paper_data.pkl contém os dados pré-processados. 
+
+O segundo conjunto contém metadados de 43 artigos, obtidos manualmente em pesquisas no [Google Scholar](https://scholar.google.com.br/), 
+em formato XML. Esse conjunto não foi utilizado ainda. Um coletor está sendo feito em outro ramo para localizar papers em formato PDF na web.
+Esses papers passarão por um processo de extração dos metadados com o grobid, limpeza e pré-processamento.
+
+## _TODO_LIST_
+
+- Melhorar a limpeza dos dados
+    - deduplicar termos utilizando métricas de similaridade entre palavras
+- Enumerar categorias para procurar dentro dos documentos
+    - ex.: genes, países, fármacos, outras características
+- Localizar entidades nomeadas dentro dos documentos para formar conjuntos de analogias
+    -    utilizar o pacote [scipspacy](https://github.com/allenai/scispacy)
+- Analisar quais dados são mais relevantes para plotar na projeção, visto que há limitações de pontos na projeção.
+- Fazer índice reverso dos termos relevantes e em quais documentos aparecem.
