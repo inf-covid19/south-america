@@ -38,6 +38,10 @@ italy_data <- data[data$country=='italy',]
 ###  como ocorrem o aumento/diminuição da taxa de infecção do COVID-19
 ###
 
+### k_value(t) - calcula o parâmetro k do período de contaminação t
+###
+###
+
 # Assumindo como ponto inicial a primeira observação dos infectados em uma região
 a0 = italy_data[italy_data$counts>0,]$counts[1]
 
@@ -68,14 +72,10 @@ k_value <- function(t){
   return(log(a_m(t)/a0)/t)
 }
 
-### A(t) = a0*exp(0.1943*t)
+### A(t,k) = a0*exp(0.1943*t)
 a <- function(t,k){
   return(a0*exp(k*t))
 }
-
-comp=seq(40,100,1)
-n=length(comp)
-
 
 # qual o valor de k que descreve melhor
 # a evoluçao da contaminação
@@ -85,5 +85,6 @@ for(n in c(1:n)){
   val = c(val,a(n,k_value(24.199)))
 }
 
-plot(y_italy)
+plot(y_italy,main="Função de crescimento exponencial com k=24.199",ylab="Casos na Itália", xlab="Dias t")
 lines(val,col='red')
+legend(55,35000, legend="y = e(k,t)",border="white")
