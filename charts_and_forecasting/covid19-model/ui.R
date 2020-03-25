@@ -9,7 +9,7 @@
 
 library(shiny)
 
-setwd('/opt/covid19-analysis/charts_and_forecasting/forecasting/')
+#setwd('/opt/covid19-analysis/charts_and_forecasting/forecasting/')
 df <- read.csv(file='total_cases.csv', header=TRUE)
 countries <- names(df)[!names(df) %in% c('date','day')]
 
@@ -26,7 +26,7 @@ shinyUI(fluidPage(
                         choices=countries,
                         selected='Italy'),
             sliderInput("interval",label=h3("Time interval:"),min=1,max=80,step=1,value=c(32,80)),
-            sliderInput('k', label=h3("parameter k:"),min=0,max=1,step=0.0001,value=0.0114)
+            sliderInput('k', label=h3("parameter k:"),min=0,max=1,step=0.0001,value=0.1148)
         ),
         # Show a plot of the generated distribution
         mainPanel(

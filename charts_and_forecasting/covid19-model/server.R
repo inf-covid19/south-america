@@ -51,7 +51,7 @@ a <- function(y0,x,k){
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
 
-    setwd('/opt/covid19-analysis/charts_and_forecasting/forecasting/')
+    #setwd('/opt/covid19-analysis/charts_and_forecasting/forecasting/')
     df <- read.csv(file='total_cases.csv', header=TRUE)
     
     
