@@ -9,7 +9,7 @@
 
 library(shiny)
 
-setwd('/home/abel/workspace/dev/covid19-analysis/charts_and_forecasting/forecasting/')
+setwd('/opt/covid19-analysis/charts_and_forecasting/forecasting/')
 df <- read.csv(file='total_cases.csv', header=TRUE)
 countries <- names(df)[!names(df) %in% c('date','day')]
 
