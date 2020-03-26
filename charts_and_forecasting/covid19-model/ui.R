@@ -15,10 +15,10 @@ countries <- names(df)[!names(df) %in% c('date','day')]
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
-
+    
     # Application title
     titlePanel("Evolution of the COVID-19 contamination"),
-
+    
     # Sidebar with a slider input for number of bins
     sidebarLayout(
         sidebarPanel(
