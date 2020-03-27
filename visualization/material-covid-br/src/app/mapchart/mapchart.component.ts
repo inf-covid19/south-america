@@ -479,7 +479,8 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
     d3.select('#svg-linechart-country').selectAll('*').remove();
     // Define svg canvas
-    const svg = d3.select('#svg-linechart-country');
+    const svg = d3.select('#svg-linechart-country')
+        .attr('viewBox', '0 0 ' + (container.width) + ' ' + (container.height));
     const g = svg.append('g')
         .attr('transform', 'translate(' + margin.right + ', ' + margin.left + ')');
 
@@ -614,7 +615,8 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
     d3.select('#svg-linechart-state').selectAll('*').remove();
     // Define svg canvas
-    const svg = d3.select('#svg-linechart-state');
+    const svg = d3.select('#svg-linechart-state')
+        .attr('viewBox', '0 0 ' + (container.width) + ' ' + (container.height));
     const g = svg.append('g')
         .attr('transform', 'translate(' + margin.right + ', ' + margin.left + ')');
 
@@ -760,7 +762,8 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
     d3.select('#svg-linechart-county').selectAll('*').remove();
     // Define svg canvas
-    const svg = d3.select('#svg-linechart-county');
+    const svg = d3.select('#svg-linechart-county')
+        .attr('viewBox', '0 0 ' + (container.width) + ' ' + (container.height));
     const g = svg.append('g')
         .attr('transform', 'translate(' + margin.right + ', ' + margin.left + ')');
 
@@ -897,7 +900,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    window.addEventListener('resize', this.loadWidgetCountry);
+    // window.addEventListener('resize', this.loadWidgetCountry);
   }
 
   ngOnDestroy() {
