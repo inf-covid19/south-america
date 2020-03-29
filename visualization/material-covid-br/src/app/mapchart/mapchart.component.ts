@@ -155,7 +155,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
     const margin = { top: 0, right: 15, bottom: 35, left: 0 };
     const width = container.width - margin.left - margin.right;
     const height = container.height - margin.top - margin.bottom;
-    
+
     const x = d3.scaleTime()
         .domain([iniDate, endDate])
         .rangeRound([margin.left, width - margin.right]);
@@ -360,7 +360,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           // if (typeof valorEnd === 'undefined') { valorEnd = 0; }
           // if (typeof valorIni === 'undefined') { valorIni = 0; }
           TotalReport.set(key, Math.abs(valorEnd - valorIni));
-          self.totalCountry += (valorEnd - valorIni);
+          self.totalCountry += Math.abs(valorEnd - valorIni);
           // self.totalCountry += valorEnd;
           // if(self.iniSelectedDay === )
           maxValue = Math.max(maxValue, Math.abs(valorEnd - valorIni));
@@ -553,7 +553,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         // const beginDay = self.listDatesCounties.indexOf(self.iniSelectedDay) === -1 ? self.listDatesCounties[0] : self.iniSelectedDay;
         // const beginDay = self.iniSelectedDay;
         const beginDay = self.listDatesStates[self.listDatesStates.indexOf(self.iniSelectedDay) - 1];
-        const lastDay = self.endSelectedDay;
+        const lastDay = self.listDatesStates.indexOf(self.endSelectedDay) === self.listDatesStates.length - 1 ? self.listDatesStates[self.listDatesStates.length - 2] : self.endSelectedDay;
         // const lastDay = self.listDatesCounties.indexOf(self.endSelectedDay) === -1 ? self.listDatesCounties[self.listDatesCounties.length - 1] : self.endSelectedDay;
         // tslint:disable-next-line:forin
         self.countiesByStates[stateParam].forEach(function(key, index) {
