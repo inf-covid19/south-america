@@ -712,5 +712,35 @@ div p {
 
 .my-custom-scrollbar {
   position: relative;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
+
+.container-fluid{
+  padding: 0px 0px;
+}
+
+.axis--grid .domain {
+  fill: #aaaaaa;
+  stroke: none;
+}
+
+.axis--x .domain,
+.axis--grid .tick line {
+  stroke: #fff;
+}
+
+.axis--grid .tick--minor line {
+  stroke-opacity: .5;
+}
+
+rect.selection {
+  stroke: #ff3d00;
+  fill: #ff3d00;
+  fill-opacity: 1;
+}
+
+body, .wrapper, .main-panel.ps.ps--active-x {
+  overflow-x: hidden;
+}
+

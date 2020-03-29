@@ -435,3 +435,32 @@ form .ng-valid{
 .mat-input-ripple {
     background-color: $brand-primary;
 }
+
+.custom-checkbox .custom-control-input.my-danger {
+  &:checked ~ .custom-control-label::before {
+    color: #ff3d00;
+    border-color: #ff3d00;
+    @include gradient-bg(#ff3d00);
+    @include box-shadow(#ff3d00);
+  }
+
+  &:focus ~ .custom-control-label::before {
+    // the mixin is not used here to make sure there is feedback
+    @if $enable-shadows {
+      box-shadow: $input-box-shadow, $input-focus-box-shadow;
+    } @else {
+      box-shadow: $custom-control-indicator-focus-box-shadow;
+    }
+  }
+
+  &:focus:not(:checked) ~ .custom-control-label::before {
+    border-color: #ff3d00;
+  }
+
+  &:not(:disabled):active ~ .custom-control-label::before {
+    color: #ff3d00;
+    background-color: #ff3d00;
+    border-color: #ff3d00;
+    @include box-shadow(#ff3d00);
+  }
+}

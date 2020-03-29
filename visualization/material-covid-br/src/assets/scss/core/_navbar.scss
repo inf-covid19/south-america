@@ -1,7 +1,8 @@
 .navbar {
     border: 0;
     border-radius: $border-radius-base;
-    padding: 0.625rem 0;
+    //padding: 0.625rem 0;
+    padding: 0 0;
     margin-bottom: 20px;
     @include navbar-colors($white-color, $navbar-color);
 
@@ -184,14 +185,15 @@
   }
 
   &.navbar-transparent{
-    padding-top: 10px;
+    padding-top: 0px;
   }
 
   .collapse{
     .navbar-nav{
       .nav-item .nav-link{
         position: relative;
-        padding: 10px 15px;
+        //padding: 10px 15px;
+        padding: 0px 0px;
         font-weight: $font-weight-default;
         font-size: $mdb-btn-font-size-base;
         text-transform: uppercase;

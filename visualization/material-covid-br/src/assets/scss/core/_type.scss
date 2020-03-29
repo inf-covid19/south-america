@@ -99,3 +99,8 @@ g text, g path {
   font-size: calc(1.3vh);
   color: #aaaaaa;
 }
+
+g.legend g text, g.legend text {
+  font-size: calc(2.3vh);
+  color: #aaaaaa;
+}
