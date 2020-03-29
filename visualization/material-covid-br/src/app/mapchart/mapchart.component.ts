@@ -58,6 +58,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
   countiesNames = {};
 
   selectedState = 'RS';
+  selectedCounty = '4314902';
 
   constructor() {
     d3.formatDefaultLocale({
@@ -302,7 +303,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
   getPlasmaList = (cant) => {
     const rangeColor = [];
     for (let i = 0; i < cant; i++) {
-      rangeColor.push(d3.interpolateInferno( i / (cant - 1) ));
+      rangeColor.push(d3.interpolateYlOrRd( i / (cant - 1) ));
     }
     return rangeColor;
   }
@@ -336,7 +337,8 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
     let maxValue = 0;
 
-    const currDate = self.listDatesStates[self.listDatesStates.indexOf(self.iniSelectedDay) - 1];
+    // const currDate = self.listDatesStates[self.listDatesStates.indexOf(self.iniSelectedDay) - 1];
+    const currDate = self.iniSelectedDay;
     const promises = [
       d3.json('./assets/json/coduf.json'),
       new Promise((resolve) => {
@@ -372,13 +374,16 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
     Promise.all(promises).then(ready);
 
+    const stepSize = Math.max(Math.ceil((Math.floor(maxValue / 9)) / 10) * 10, 1);
     const yLegend = d3.scaleLinear()
-        .domain(d3.range(Math.floor(maxValue / 9), Math.max(maxValue * (10 / 9), 9), Math.max(Math.ceil(maxValue / 9), 1)).reverse())
+        .domain(d3.range(stepSize === 1 ? 1 : stepSize + 1, Math.max(stepSize * 10, 9), stepSize).reverse())
         .rangeRound([58, 88]);
 
     // @ts-ignore
     const colorRangePlasma = self.getPlasmaList(9);
-    const color = d3.scaleThreshold().domain(d3.range(Math.floor(maxValue / 9), Math.max(maxValue * (10 / 9), 9), Math.max(Math.ceil(maxValue / 9), 1))).range(colorRangePlasma);
+    // Math.floor(maxValue / 9)
+    const color = d3.scaleThreshold().domain(d3.range(stepSize === 1 ? 1 : stepSize + 1, Math.max(stepSize * 10, 9), stepSize))
+        .range(colorRangePlasma);
 
     const g = self.svg.append('g');
 
@@ -424,7 +429,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
             // tslint:disable-next-line:only-arrow-functions
             .tickFormat(function(y, i) {
               if (i > 8) { return ''; }
-              if (i === 0) { return '≤' + y + ''; }
+              if (i === 0) { return '≤' + (y - 1) + ''; }
               if (i === 8) { return '≥' + lastTick + ''; }
               lastTick = y;
               return (y - 1) + ''; })
@@ -551,8 +556,8 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         self.rankingCounties = [];
         self.totalState = 0;
         // const beginDay = self.listDatesCounties.indexOf(self.iniSelectedDay) === -1 ? self.listDatesCounties[0] : self.iniSelectedDay;
-        // const beginDay = self.iniSelectedDay;
-        const beginDay = self.listDatesStates[self.listDatesStates.indexOf(self.iniSelectedDay) - 1];
+        const beginDay = self.iniSelectedDay;
+        // const beginDay = self.listDatesStates[self.listDatesStates.indexOf(self.iniSelectedDay) - 1];
         const lastDay = self.listDatesStates.indexOf(self.endSelectedDay) === self.listDatesStates.length - 1 ? self.listDatesStates[self.listDatesStates.length - 2] : self.endSelectedDay;
         // const lastDay = self.listDatesCounties.indexOf(self.endSelectedDay) === -1 ? self.listDatesCounties[self.listDatesCounties.length - 1] : self.endSelectedDay;
         // tslint:disable-next-line:forin
@@ -590,14 +595,17 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
     Promise.all(promises).then(ready);
 
+    const stepSize = Math.max(Math.ceil((Math.floor(maxValue / 9)) / 10) * 10, 1);
+
     const yLegend = d3.scaleLinear()
-        .domain(d3.range(Math.floor(maxValue / 9), Math.max(maxValue * (10 / 9), 9), Math.max(Math.ceil(maxValue / 9), 1)).reverse())
+        .domain(d3.range(stepSize === 1 ? 1 : stepSize + 1, Math.max(stepSize * 10, 9), stepSize).reverse())
         .rangeRound([58, 88]);
 
 
     // @ts-ignore
     const colorRangePlasma = self.getPlasmaList(9);
-    const color = d3.scaleThreshold().domain(d3.range(Math.floor(maxValue / 9), Math.max(maxValue * (10 / 9), 9), Math.max(Math.ceil(maxValue / 9), 1))).range(colorRangePlasma);
+    const color = d3.scaleThreshold().domain(d3.range(stepSize === 1 ? 1 : stepSize + 1, Math.max(stepSize * 10, 9), stepSize))
+        .range(colorRangePlasma);
 
     const g = self.svg.append('g');
 
@@ -646,7 +654,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
             // tslint:disable-next-line:only-arrow-functions
             .tickFormat(function(y, i) {
               if (i > 8) { return ''; }
-              if (i === 0) { return '≤' + y + ''; }
+              if (i === 0) { return '≤' + (y-1) + ''; }
               if (i === 8) { return '≥' + lastTick + ''; }
               lastTick = y;
               return (y - 1) + ''; })
@@ -664,12 +672,13 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           .data(counties.features)
           .enter().append('path')
           .attr('fill', (d) => {
-            const munColor = color(d.TotalReport = TotalReport.get(d.properties.COD_IBGE));
-            return munColor;
+            const munColor = typeof TotalReport.get(d.properties.COD_IBGE) === 'undefined' ? 0 : TotalReport.get(d.properties.COD_IBGE);
+            return color(munColor);
           })
           .attr('d', path)
           .attr('stroke', '#eeeeee')
           .on('click', function(d) {
+            self.selectedCounty = d.properties.COD_IBGE;
             if (justOneRecord === true) {
               self.loadCountiesLineChart(self.selectedState, self.iniSelectedDay, self.endSelectedDay, d.properties.COD_IBGE);
             }
@@ -718,7 +727,8 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
               d3.select(this).style('font-weight', '300');
             })
             .on('click', function() {
-              self.loadCountiesLineChart(self.selectedState, self.iniSelectedDay, self.endSelectedDay, self.rankingCounties[item].ibge)
+              self.selectedCounty = self.rankingCounties[item].ibge;
+              self.loadCountiesLineChart(self.selectedState, self.iniSelectedDay, self.endSelectedDay, self.selectedCounty);
             })
             .html('<text class="gt-number" style="padding-left: 6px;">' + self.formatThousandsSeperator(self.rankingCounties[item].value)
                 + '</text> ' + self.rankingCounties[item].name);
@@ -730,7 +740,8 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if ( justOneRecord === true) {
-      self.loadCountiesLineChart(stateParam, self.iniSelectedDay, self.endSelectedDay, self.rankingCounties[0].ibge);
+      self.selectedCounty = self.countiesByStates[stateParam].indexOf(self.selectedCounty) !== -1 ? self.selectedCounty : self.rankingCounties[0].ibge;
+      self.loadCountiesLineChart(stateParam, self.iniSelectedDay, self.endSelectedDay, self.selectedCounty);
     } else {
       self.loadCountiesLineChart(stateParam, self.iniSelectedDay, self.endSelectedDay);
     }
