@@ -31,9 +31,20 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
   lineChartCountry = [];
   lineChartStates = [];
   lineChartCounties = [];
+
+  counts = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000, 2000000, 5000000,
+    10000000, 20000000, 50000000, 100000000, 200000000, 500000000, 1000000000, 2000000000, 5000000000, 10000000000, 20000000000, 50000000000,
+    100000000000, 200000000000, 500000000000];
+
   countiesByStates = {AC: [], AL: [], AM: [], AP: [],  BA: [], CE: [], DF: [], ES: [], GO: [], MA: [],
     MG: [], MS: [], MT: [], PA: [],  PB: [], PE: [], PI: [], PR: [],  RJ: [], RN: [],  RO: [], RR: [], RS: [], SC: [],
     SE: [], SP: [], TO: []};
+
+  closestMaxLegend = (goal) => {
+    return this.counts.reduce(function(prev, curr) {
+      return (Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev);
+    });
+  }
 
   coloresGoogle = (n) => {
     const coloresG = ['#3366cc', '#dc3912', '#ff9900', '#109618', '#990099',
@@ -374,14 +385,13 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
     Promise.all(promises).then(ready);
 
-    const stepSize = Math.max(Math.ceil((Math.floor(maxValue / 9)) / 10) * 10, 1);
+    const newMaxVal = self.closestMaxLegend(maxValue / 1.5);
+    const stepSize = newMaxVal / 10;
     const yLegend = d3.scaleLinear()
         .domain(d3.range(stepSize === 1 ? 1 : stepSize + 1, Math.max(stepSize * 10, 9), stepSize).reverse())
         .rangeRound([58, 88]);
 
-    // @ts-ignore
     const colorRangePlasma = self.getPlasmaList(9);
-    // Math.floor(maxValue / 9)
     const color = d3.scaleThreshold().domain(d3.range(stepSize === 1 ? 1 : stepSize + 1, Math.max(stepSize * 10, 9), stepSize))
         .range(colorRangePlasma);
 
@@ -594,8 +604,8 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
     ];
 
     Promise.all(promises).then(ready);
-
-    const stepSize = Math.max(Math.ceil((Math.floor(maxValue / 9)) / 10) * 10, 1);
+    const newMaxVal = self.closestMaxLegend(maxValue / 1.5);
+    const stepSize = newMaxVal / 10;
 
     const yLegend = d3.scaleLinear()
         .domain(d3.range(stepSize === 1 ? 1 : stepSize + 1, Math.max(stepSize * 10, 9), stepSize).reverse())
