@@ -30,7 +30,7 @@ if __name__ == "__main__":
         "-o", "--output", help="output csv file", default="covid19-cities.csv")
     args = parser.parse_args()
 
-    print('Retrieving covid19br data...')
+    print('Retrieving covid19br cities data...')
 
     time_df = pd.read_csv(COVID19_CITIES_TIME_URL, dtype=CSV_DTYPE)
     today_df = pd.read_csv(COVID19_CITIES_TODAY_URL, dtype=CSV_DTYPE)
@@ -69,6 +69,39 @@ if __name__ == "__main__":
         custom_df['ibgeID'] = custom_df['ibgeID'].astype(str) + str(index)
 
         history_df.update(custom_df)
+
+    print('Filling missing cities data...')
+
+    ibgeIDs = history_df['ibgeID'].unique()
+
+    for ibgeID in ibgeIDs:
+        city_df = history_df[history_df['ibgeID'] == ibgeID]
+
+        min_date = datetime.strptime(city_df['date'].min(), DATE_FORMAT)
+        max_date = datetime.strptime(city_df['date'].max(), DATE_FORMAT)
+
+        delta_date = max_date - min_date
+
+        if len(city_df) == delta_date.days + 1:
+            continue
+
+        last_day_df = city_df[city_df['date'] ==
+                              datetime.strftime(min_date, DATE_FORMAT)]
+        for i in range(delta_date.days + 1):
+            day = min_date + timedelta(days=i)
+            day_df = city_df[city_df['date'] ==
+                             datetime.strftime(day, DATE_FORMAT)]
+
+            if day_df.empty:
+                last_day_df['date'] = datetime.strftime(day, DATE_FORMAT)
+                last_day_df['newCases'] = 0
+
+                city_df = pd.concat([city_df, last_day_df], ignore_index=True)
+            else:
+                last_day_df = day_df
+
+        history_df = pd.concat([history_df, city_df]
+                               ).drop_duplicates().reset_index(drop=True)
 
     history_df.sort_values('date', inplace=True)
     history_df['totalCases'] = history_df['totalCases'].astype(int)
