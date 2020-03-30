@@ -141,3 +141,4 @@ dmypy.json
 # dependencies
 visualization/material-covid-br/node_modules
 visualization/material-covid-br/.idea
+visualization/material-covid-br/src/assets/csv

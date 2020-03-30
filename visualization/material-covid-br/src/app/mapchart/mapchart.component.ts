@@ -285,8 +285,10 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       self.loadCountryLineChart(self.iniSelectedDay, self.endSelectedDay);
     }
 
-    gBrush.call(brush.move, [endDate - (24 * 60 * 60 * 1000) * 7, endDate].map(x));
-    self.iniSelectedDay = formatTime(endDate - (24 * 60 * 60 * 1000) * 7);
+    // gBrush.call(brush.move, [endDate - (24 * 60 * 60 * 1000) * 7, endDate].map(x));
+    gBrush.call(brush.move, [iniDate, endDate].map(x));
+    // self.iniSelectedDay = formatTime(endDate - (24 * 60 * 60 * 1000) * 7);
+    self.iniSelectedDay = formatTime(iniDate);
     self.endSelectedDay = formatTime(endDate);
     self.loadWidgetCountry();
     self.loadWidgetState(self.selectedState);
@@ -406,8 +408,9 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           .data(coduf.features)
           .enter().append('path')
           .attr('fill', (d) => {
-            const estColor = color(d.TotalReport = TotalReport.get(d.properties.UF_05));
-            return estColor;
+            const estColor = typeof TotalReport.get(d.properties.UF_05) === 'undefined' ? 0 : TotalReport.get(d.properties.UF_05);
+            if (estColor === 0) { return '#000000'; }
+            return color(estColor);
           })
           .attr('stroke', '#eeeeee')
           .attr('d', path)
@@ -461,6 +464,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         .attr('x', width / 1.7)
         .attr('y', 20)
         .attr('fill', '#aaaaaa')
+        .style('background-color', '#000000')
         .attr('font-family', 'sans-serif')
         .style('font-size', '20px')
         .style('font-weight', 'bold')
@@ -639,6 +643,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           .enter().append('path')
           .attr('fill', (d) => {
             const munColor = typeof TotalReport.get(d.properties.COD_IBGE) === 'undefined' ? 0 : TotalReport.get(d.properties.COD_IBGE);
+            if (munColor === 0) { return '#000000'; }
             return color(munColor);
           })
           .attr('d', path)
