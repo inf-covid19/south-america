@@ -10,7 +10,7 @@ import d3Tip from 'd3-tip';
 export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
   uniqueId = 'id-' + Math.random().toString(36).substr(2, 16);
 
-  svg: any;
+  // svg: any;
   tipCountry: any;
   tipCounty: any;
   tipLineCountry: any;
@@ -339,7 +339,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
     d3.select('#svg-country').selectAll('*').remove();
 
-    self.svg = d3.select('#svg-country')
+    const svg = d3.select('#svg-country')
         .attr('viewBox', '0 0 ' + (container.width * 1.3) + ' ' + (container.height * 1.3));
 
     const TotalReport = d3.map();
@@ -395,9 +395,69 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
     const color = d3.scaleThreshold().domain(d3.range(stepSize === 1 ? 1 : stepSize + 1, Math.max(stepSize * 10, 9), stepSize))
         .range(colorRangePlasma);
 
-    const g = self.svg.append('g');
+    const mapG = d3.select('#svg-country').append('g');
+    function ready([coduf]) {
+      const scaleRatio = Math.min(width / 700, height / 700);
+      // d3.select('#svg-country').append('g')
+          mapG.attr('id', 'country-g-map')
+          .attr('transform', 'scale(' + scaleRatio + ')')
+          .attr('class', 'counties')
+          .selectAll('path')
+          .data(coduf.features)
+          .enter().append('path')
+          .attr('fill', (d) => {
+            const estColor = color(d.TotalReport = TotalReport.get(d.properties.UF_05));
+            return estColor;
+          })
+          .attr('stroke', '#eeeeee')
+          .attr('d', path)
+          .on('mouseover', self.tipCountry.show)
+          .on('mouseout', function() {
+            d3.select(this).attr('stroke', '#eeeeee');
+            self.tipCountry.hide();
+          })
+          .on('click', function(d) {
+            self.selectedState = d.properties.UF_05;
+            if (justOneRecordState === true) {
+              self.loadStatesLineChart(self.iniSelectedDay, self.endSelectedDay, self.selectedState);
+            }
+            if (d3.select('#multipleCountiesCheckBox').property('checked')) {
+              self.loadWidgetState(self.selectedState);
+            } else {
+              self.loadWidgetState(self.selectedState, true);
+            }
+          });
 
-    self.svg.append('text')
+      const widthTrans = Math.abs((width - d3.select('#country-g-map').node().getBoundingClientRect().width)) * 4;
+      const heightTrans = Math.abs((height - d3.select('#country-g-map').node().getBoundingClientRect().height)) * 2;
+      d3.select('#country-g-map').attr('transform', 'translate( ' + widthTrans + ' , ' + heightTrans + ') scale(' + scaleRatio + ')');
+    }
+
+    self.tipCountry = d3Tip();
+    self.tipCountry.attr('class', 'd3-tip')
+        .html(function(d) {
+      d3.select(this).attr('stroke', '#717171');
+      return '<div style="opacity:0.8;background-color:#8b0707;padding:7px;color:white">' +
+      '<text>Estado: </text><text style="font-weight: 800">' + d.properties.NOME_UF + '</text><br/>' +
+      '<text>Total casos: </text><text style="font-weight: 800">' +
+          ( typeof TotalReport.get(d.properties.UF_05) === 'undefined' ? 0 : TotalReport.get(d.properties.UF_05) ) +
+          '</text><br/>' +
+      '</div>'
+    });
+
+    const zoom = d3.zoom()
+        .scaleExtent([1, 8])
+        .on('zoom', function() {
+          mapG.selectAll('path')
+              .attr('transform', d3.event.transform);
+        });
+
+    svg.call(zoom);
+
+    const g = svg.append('g');
+    g.call(self.tipCountry);
+
+    svg.append('text')
         .attr('x', width / 1.7)
         .attr('y', 20)
         .attr('fill', '#aaaaaa')
@@ -447,55 +507,6 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         .select('.domain')
         .remove();
 
-    function ready([coduf]) {
-      const scaleRatio = Math.min(width / 700, height / 700);
-      d3.select('#svg-country').append('g')
-          .attr('id', 'country-g-map')
-          .attr('transform', 'scale(' + scaleRatio + ')')
-          .attr('class', 'counties')
-          .selectAll('path')
-          .data(coduf.features)
-          .enter().append('path')
-          .attr('fill', (d) => {
-            const estColor = color(d.TotalReport = TotalReport.get(d.properties.UF_05));
-            return estColor;
-          })
-          .attr('stroke', '#eeeeee')
-          .attr('d', path)
-          .on('mouseover', self.tipCountry.show)
-          .on('mouseout', function() {
-            d3.select(this).attr('stroke', '#eeeeee');
-            self.tipCountry.hide();
-          })
-          .on('click', function(d) {
-            self.selectedState = d.properties.UF_05;
-            if (justOneRecordState === true) {
-              self.loadStatesLineChart(self.iniSelectedDay, self.endSelectedDay, self.selectedState);
-            }
-            if (d3.select('#multipleCountiesCheckBox').property('checked')) {
-              self.loadWidgetState(self.selectedState);
-            } else {
-              self.loadWidgetState(self.selectedState, true);
-            }
-          });
-
-      const widthTrans = Math.abs((width - d3.select('#country-g-map').node().getBoundingClientRect().width)) * 4;
-      const heightTrans = Math.abs((height - d3.select('#country-g-map').node().getBoundingClientRect().height)) * 2;
-      d3.select('#country-g-map').attr('transform', 'translate( ' + widthTrans + ' , ' + heightTrans + ') scale(' + scaleRatio + ')');
-    }
-
-    self.tipCountry = d3Tip();
-    self.tipCountry.attr('class', 'd3-tip')
-        .html(function(d) {
-      d3.select(this).attr('stroke', '#717171');
-      return '<div style="opacity:0.8;background-color:#8b0707;padding:7px;color:white">' +
-      '<text>Estado: </text><text style="font-weight: 800">' + d.properties.NOME_UF + '</text><br/>' +
-      '<text>Total casos: </text><text style="font-weight: 800">' +
-          ( typeof TotalReport.get(d.properties.UF_05) === 'undefined' ? 0 : TotalReport.get(d.properties.UF_05) ) +
-          '</text><br/>' +
-      '</div>'
-    });
-    g.call(self.tipCountry);
 
     // @ts-ignore
     d3.select('#total-country').html(self.formatThousandsSeperator(self.totalCountry));
@@ -553,7 +564,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
     d3.select('#svg-county').selectAll('*').remove();
 
-    self.svg = d3.select('#svg-county')
+    const svg = d3.select('#svg-county')
         .attr('viewBox', '0 0 ' + (container.width * 1.3) + ' ' + (container.height * 1.3));
 
     const TotalReport = d3.map();
@@ -617,9 +628,64 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
     const color = d3.scaleThreshold().domain(d3.range(stepSize === 1 ? 1 : stepSize + 1, Math.max(stepSize * 10, 9), stepSize))
         .range(colorRangePlasma);
 
-    const g = self.svg.append('g');
+    const mapG = d3.select('#svg-county').append('g');
+    function ready([counties]) {
+      const scaleRatio = Math.min(width / 550, height / 550);
+      mapG.attr('class', 'counties')
+          .attr('id', 'county-g-map')
+          .attr('transform', 'scale(' + scaleRatio + ')')
+          .selectAll('path')
+          .data(counties.features)
+          .enter().append('path')
+          .attr('fill', (d) => {
+            const munColor = typeof TotalReport.get(d.properties.COD_IBGE) === 'undefined' ? 0 : TotalReport.get(d.properties.COD_IBGE);
+            return color(munColor);
+          })
+          .attr('d', path)
+          .attr('stroke', '#eeeeee')
+          .on('click', function(d) {
+            self.selectedCounty = d.properties.COD_IBGE;
+            if (justOneRecord === true) {
+              self.loadCountiesLineChart(self.selectedState, self.iniSelectedDay, self.endSelectedDay, d.properties.COD_IBGE);
+            }
+          })
+          .on('mouseover', self.tipCounty.show)
+          .on('mouseout', function() {
+            d3.select(this).attr('stroke', '#eeeeee');
+            self.tipCounty.hide();
+          });
 
-    self.svg.append('text')
+      const widthTrans = Math.min(Math.abs((width - d3.select('#county-g-map').node().getBoundingClientRect().width)) * 1.8, width * 0.35);
+      const heightTrans = Math.min(Math.abs((height - d3.select('#county-g-map').node().getBoundingClientRect().height)) * 1.5, height * 0.35);
+      d3.select('#county-g-map').attr('transform', 'translate( ' + widthTrans + ' , ' + heightTrans + ') scale(' + scaleRatio + ')');
+    }
+
+    self.tipCounty = d3Tip();
+    self.tipCounty.attr('class', 'd3-tip')
+        // .offset([100, 40])
+        .html(function(d) {
+          d3.select(this).attr('stroke', '#717171');
+          return '<div style="opacity:0.8;background-color:#8b0707;padding:7px;color:white">' +
+            '<text>Município: </text><text style="font-weight: 800">' + d.properties.NOME_MUNI + '</text><br/>' +
+            '<text>Total casos: </text><text style="font-weight: 800">' +
+              ( typeof TotalReport.get(d.properties.COD_IBGE) === 'undefined' ? 0 : TotalReport.get(d.properties.COD_IBGE) )+
+              '</text><br/>' +
+            '</div>'
+        });
+
+
+    const zoom = d3.zoom()
+        .scaleExtent([1, 8])
+        .on('zoom', function() {
+          mapG.selectAll('path')
+              .attr('transform', d3.event.transform);
+        });
+
+    svg.call(zoom);
+
+    const g = svg.append('g');
+
+    svg.append('text')
         .attr('x', width / 2)
         .attr('y', 20)
         .attr('fill', '#aaaaaa')
@@ -672,50 +738,6 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         .select('.domain')
         .remove();
 
-    function ready([counties]) {
-      const scaleRatio = Math.min(width / 550, height / 550);
-      d3.select('#svg-county').append('g')
-          .attr('class', 'counties')
-          .attr('id', 'county-g-map')
-          .attr('transform', 'scale(' + scaleRatio + ')')
-          .selectAll('path')
-          .data(counties.features)
-          .enter().append('path')
-          .attr('fill', (d) => {
-            const munColor = typeof TotalReport.get(d.properties.COD_IBGE) === 'undefined' ? 0 : TotalReport.get(d.properties.COD_IBGE);
-            return color(munColor);
-          })
-          .attr('d', path)
-          .attr('stroke', '#eeeeee')
-          .on('click', function(d) {
-            self.selectedCounty = d.properties.COD_IBGE;
-            if (justOneRecord === true) {
-              self.loadCountiesLineChart(self.selectedState, self.iniSelectedDay, self.endSelectedDay, d.properties.COD_IBGE);
-            }
-          })
-          .on('mouseover', self.tipCounty.show)
-          .on('mouseout', function() {
-            d3.select(this).attr('stroke', '#eeeeee');
-            self.tipCounty.hide();
-          });
-
-      const widthTrans = Math.min(Math.abs((width - d3.select('#county-g-map').node().getBoundingClientRect().width)) * 1.8, width * 0.35);
-      const heightTrans = Math.min(Math.abs((height - d3.select('#county-g-map').node().getBoundingClientRect().height)) * 1.5, height * 0.35);
-      d3.select('#county-g-map').attr('transform', 'translate( ' + widthTrans + ' , ' + heightTrans + ') scale(' + scaleRatio + ')');
-    }
-
-    self.tipCounty = d3Tip();
-    self.tipCounty.attr('class', 'd3-tip')
-        // .offset([100, 40])
-        .html(function(d) {
-          d3.select(this).attr('stroke', '#717171');
-          return '<div style="opacity:0.8;background-color:#8b0707;padding:7px;color:white">' +
-            '<text>Município: </text><text style="font-weight: 800">' + d.properties.NOME_MUNI + '</text><br/>' +
-            '<text>Total casos: </text><text style="font-weight: 800">' +
-              ( typeof TotalReport.get(d.properties.COD_IBGE) === 'undefined' ? 0 : TotalReport.get(d.properties.COD_IBGE) )+
-              '</text><br/>' +
-            '</div>'
-        });
     g.call(self.tipCounty);
 
     d3.select('#total-state').html(self.formatThousandsSeperator(self.totalState));
