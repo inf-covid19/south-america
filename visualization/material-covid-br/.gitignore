@@ -40,3 +40,6 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+/src/assets/csv/cases-brazil-cities-ibge.csv
+/src/assets/csv/cases-brazil-states.csv
