@@ -22,6 +22,8 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
   data = {};
   totalCountry = 0;
   totalState = 0;
+  totalDeathCountry = 0;
+  totalDeathState = 0;
   rankingStates = [];
   rankingCounties = [];
   listDatesStates = [];
@@ -44,8 +46,8 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
   yFormat = d3.format('.2s');
 
   statesNames = {
-    AC: 'Acre', AL: 'Alagoas', AM: 'Amazonas', AP: 'Amapâ', BA: 'Bahia', CE: 'Ceará', DF: 'Distrito Federal', ES: 'Espírito Santo',
-    GO: 'Goaís', MA: 'Maranhão', MG: 'Minas Gerais', MS: 'Mato Grosso do Sul', MT: 'Mato Grosso', PA: 'Pará', PB: 'Paraíba', PE: 'Pernambuco',
+    AC: 'Acre', AL: 'Alagoas', AM: 'Amazonas', AP: 'Amapá', BA: 'Bahia', CE: 'Ceará', DF: 'Distrito Federal', ES: 'Espírito Santo',
+    GO: 'Goiás', MA: 'Maranhão', MG: 'Minas Gerais', MS: 'Mato Grosso do Sul', MT: 'Mato Grosso', PA: 'Pará', PB: 'Paraíba', PE: 'Pernambuco',
     PI: 'Piauí', PR: 'Paraná', RJ: 'Rio de Janeiro', RN: 'Rio Grande do Norte', RO: 'Rondônia', RR: 'Roraima', RS: 'Rio Grande do Sul', SC: 'Santa Catarina', SE: 'Sergipe', SP: 'São Paulo', TO: 'Tocantins'
   };
 
@@ -89,11 +91,13 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       const date = fns.format(d, 'yyyy-MM-dd');
       self.data[date] = {
         total: 0,
+        total_death: 0,
         estados: {}
       };
       Object.keys(this.statesNames).forEach(uf => {
         self.data[date]['estados'][uf] = {
           total: 0,
+          total_death: 0,
           municipios: {}
         };
       });
@@ -110,9 +114,10 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           }
           if (d.place_type === 'state') {
             self.data[d.date]['total'] += parseInt(d.confirmed);
-            self.data[d.date]['estados'][d.state]['total'] = parseInt(
-              d.confirmed
-            );
+            // self.data[d.date]['total_death'] += d.deaths === '' ? 0 : parseInt(d.deaths);
+            self.data[d.date]['total_death'] = 0;
+            self.data[d.date]['estados'][d.state]['total'] = parseInt(d.confirmed);
+            self.data[d.date]['estados'][d.state]['total_death'] = d.deaths === '' ? 0 : parseInt(d.deaths);
           }
           // Filling cities data
           else if (d.place_type === 'city') {
@@ -125,15 +130,15 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
               false
             ) {
               self.data[d.date]['estados'][d.state]['municipios'][munId] = {
-                total: 0
+                total: 0,
+                total_death: 0
               };
             }
             if (-1 === self.countiesByStates[d.state].indexOf(munId)) {
               self.countiesByStates[d.state].push(munId);
             }
-            self.data[d.date]['estados'][d.state]['municipios'][munId][
-              'total'
-            ] += parseInt(d.confirmed);
+            self.data[d.date]['estados'][d.state]['municipios'][munId]['total'] += parseInt(d.confirmed);
+            self.data[d.date]['estados'][d.state]['municipios'][munId]['total_death'] = d.deaths === '' ? 0 : parseInt(d.deaths);
             self.countiesNames[munId] = d.city.split('/')[0];
             if (-1 === self.listDatesCounties.indexOf(d.date)) {
               self.listDatesCounties.push(d.date);
@@ -149,6 +154,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         const lastDate = fns.format(dateSerie[i], 'yyyy-MM-dd');
 
         self.data[date].total = 0;
+        self.data[date].total_death = 0;
 
         Object.keys(self.data[date]['estados']).forEach(uf => {
           if (self.data[date]['estados'][uf].total === 0) {
@@ -156,6 +162,12 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
             self.data[date]['estados'][uf].total = lastValue;
           }
           self.data[date].total += self.data[date]['estados'][uf].total;
+
+          if (self.data[date]['estados'][uf].total_death === 0) {
+            const lastValue = self.data[lastDate]['estados'][uf].total_death;
+            self.data[date]['estados'][uf].total_death = lastValue;
+          }
+          self.data[date].total_death += self.data[date]['estados'][uf].total_death;
 
           Object.keys(self.data[lastDate]['estados'][uf]['municipios']).forEach(
             city => {
@@ -346,10 +358,10 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       });
 
       d3.select('#label-date-ini').html(
-        '<text style="font-weight: 800">' + formatTime(d1[0]) + '</text>'
+        '<text style="font-weight: 800; font-size: min(2.1vh, 2.1vw);">' + formatTime(d1[0]) + '</text>'
       );
       d3.select('#label-date-end').html(
-        '<text style="font-weight: 800">' + formatTime(d1[1]) + '</text>'
+        '<text style="font-weight: 800; font-size: min(2.1vh, 2.1vw);">' + formatTime(d1[1]) + '</text>'
       );
     }
 
@@ -370,10 +382,10 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       }
 
       d3.select('#label-date-ini').html(
-        '<text style="font-weight: 800">' + formatTime(d1[0]) + '</text>'
+        '<text style="font-weight: 800; font-size: min(2.1vh, 2.1vw);">' + formatTime(d1[0]) + '</text>'
       );
       d3.select('#label-date-end').html(
-        '<text style="font-weight: 800">' + formatTime(d1[1]) + '</text>'
+        '<text style="font-weight: 800; font-size: min(2.1vh, 2.1vw);">' + formatTime(d1[1]) + '</text>'
       );
       d3.select(this)
         .transition()
@@ -466,7 +478,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       );
 
     const TotalReport = d3.map();
-    const TotalReportMS = d3.map();
+    const TotalDeathReport = d3.map();
     const path = d3.geoPath();
 
     let maxValue = 0;
@@ -477,40 +489,32 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       d3.json('./assets/json/coduf.json'),
       new Promise(resolve => {
         self.totalCountry = 0;
+        self.totalDeathCountry = 0;
         self.rankingStates = [];
         // tslint:disable-next-line:forin
         for (const key in self.countiesByStates) {
           // for (const key in self.data[self.endSelectedDay]['estados']) {
-          let valorEnd = 0,
-            valorIni = 0;
+          let valorEnd = 0, valorIni = 0, valorDeathIni = 0, valorDeathEnd = 0;
           if (typeof self.data[self.iniSelectedDay] === 'undefined') {
             valorIni = 0;
+            valorDeathIni = 0;
           } else {
-            valorIni =
-              typeof self.data[currDate]['estados'][key] === 'undefined'
-                ? 0
-                : self.data[currDate]['estados'][key].total;
+            valorIni = typeof self.data[currDate]['estados'][key] === 'undefined' ? 0 : self.data[currDate]['estados'][key].total;
+            valorDeathIni = typeof self.data[currDate]['estados'][key] === 'undefined' ? 0 : self.data[currDate]['estados'][key].total_death;
           }
           if (typeof self.data[self.endSelectedDay] === 'undefined') {
             valorEnd = 0;
+            valorDeathEnd = 0;
           } else {
-            valorEnd =
-              typeof self.data[self.endSelectedDay]['estados'][key] ===
-              'undefined'
-                ? 0
-                : self.data[self.endSelectedDay]['estados'][key].total;
+            valorEnd = typeof self.data[self.endSelectedDay]['estados'][key] === 'undefined' ? 0 : self.data[self.endSelectedDay]['estados'][key].total;
+            valorDeathEnd= typeof self.data[self.endSelectedDay]['estados'][key] === 'undefined' ? 0 : self.data[self.endSelectedDay]['estados'][key].total_death;
           }
 
-          // if (typeof valorEnd === 'undefined') { valorEnd = 0; }
-          // if (typeof valorIni === 'undefined') { valorIni = 0; }
           TotalReport.set(key, Math.abs(valorEnd - valorIni));
+          TotalDeathReport.set(key, Math.abs(valorDeathEnd - valorDeathIni));
           self.totalCountry += Math.abs(valorEnd - valorIni);
+          self.totalDeathCountry += Math.abs(valorDeathEnd - valorDeathIni);
 
-          // console.log('self total country', self.totalCountry);
-          // console.log('self curr date', currDate);
-          // console.log('self curr date', self.endSelectedDay);
-          // self.totalCountry += valorEnd;
-          // if(self.iniSelectedDay === )
           maxValue = Math.max(maxValue, Math.abs(valorEnd - valorIni));
           self.rankingStates.push({
             region: key,
@@ -614,6 +618,11 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           ? 0
           : TotalReport.get(d.properties.UF_05)) +
         '</text><br/>' +
+        '<text>Total óbitos: </text><text style="font-weight: 800">' +
+        (typeof TotalDeathReport.get(d.properties.UF_05) === 'undefined'
+            ? 0
+            : TotalDeathReport.get(d.properties.UF_05)) +
+        '</text><br/>' +
         '</div>'
       );
     });
@@ -705,9 +714,8 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       .remove();
 
     // @ts-ignore
-    d3.select('#total-country').html(
-      self.formatThousandsSeperator(self.totalCountry)
-    );
+    d3.select('#total-country').html( self.formatThousandsSeperator(self.totalCountry) );
+    d3.select('#total-country-deaths').html( self.formatThousandsSeperator(self.totalDeathCountry) );
 
     const statesRankingElmnt = d3.select('#states-ranking');
     statesRankingElmnt.selectAll('*').remove();
@@ -781,6 +789,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
     const svg = d3.select('#svg-county').attr('viewBox','0 0 ' + container.width * 1.3 + ' ' + container.height * 1.3);
 
     const TotalReport = d3.map();
+    const TotalDeathReport = d3.map();
     const path = d3.geoPath();
     let maxValue = 0;
 
@@ -789,56 +798,43 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       new Promise(resolve => {
         self.rankingCounties = [];
         self.totalState = 0;
+        self.totalDeathState = 0;
         // const beginDay = self.listDatesCounties.indexOf(self.iniSelectedDay) === -1 ? self.listDatesCounties[0] : self.iniSelectedDay;
         const beginDay = self.iniSelectedDay;
         // const beginDay = self.listDatesStates[self.listDatesStates.indexOf(self.iniSelectedDay) - 1];
-        const lastDay =
-          self.listDatesStates.indexOf(self.endSelectedDay) ===
-          self.listDatesStates.length - 1
-            ? self.listDatesStates[self.listDatesStates.length - 2]
-            : self.endSelectedDay;
+        const lastDay = self.listDatesStates.indexOf(self.endSelectedDay) === self.listDatesStates.length - 1 ? self.listDatesStates[self.listDatesStates.length - 2] : self.endSelectedDay;
         self.countiesByStates[stateParam].forEach(function(key, index) {
-          let valorEnd = 0,
-            valorIni = 0;
+          let valorEnd = 0, valorIni = 0, valorDeathEnd = 0, valorDeathIni = 0;
           if (typeof self.data[beginDay] === 'undefined') {
             valorIni = 0;
+            valorDeathIni = 0;
           } else {
-            if (
-              typeof self.data[beginDay]['estados'][stateParam] === 'undefined'
-            ) {
+            if ( typeof self.data[beginDay]['estados'][stateParam] === 'undefined' ) {
               valorIni = 0;
+              valorDeathIni = 0;
             } else {
-              valorIni =
-                typeof self.data[beginDay]['estados'][stateParam]['municipios'][
-                  key
-                ] === 'undefined'
-                  ? 0
-                  : self.data[beginDay]['estados'][stateParam]['municipios'][
-                      key
-                    ].total;
+              valorIni = typeof self.data[beginDay]['estados'][stateParam]['municipios'][key] === 'undefined' ? 0 : self.data[beginDay]['estados'][stateParam]['municipios'][key].total;
+              valorDeathIni = typeof self.data[beginDay]['estados'][stateParam]['municipios'][key] === 'undefined' ? 0 : self.data[beginDay]['estados'][stateParam]['municipios'][key].total_death;
             }
           }
           if (typeof self.data[lastDay] === 'undefined') {
             valorEnd = 0;
+            valorDeathEnd = 0;
           } else {
-            if (
-              typeof self.data[lastDay]['estados'][stateParam] === 'undefined'
-            ) {
+            if (typeof self.data[lastDay]['estados'][stateParam] === 'undefined') {
               valorEnd = 0;
+              valorDeathEnd = 0;
             } else {
-              valorEnd =
-                typeof self.data[lastDay]['estados'][stateParam]['municipios'][
-                  key
-                ] === 'undefined'
-                  ? 0
-                  : self.data[lastDay]['estados'][stateParam]['municipios'][key]
-                      .total;
+              valorEnd = typeof self.data[lastDay]['estados'][stateParam]['municipios'][key] === 'undefined' ? 0 : self.data[lastDay]['estados'][stateParam]['municipios'][key].total;
+              valorDeathEnd = typeof self.data[lastDay]['estados'][stateParam]['municipios'][key] === 'undefined' ? 0 : self.data[lastDay]['estados'][stateParam]['municipios'][key].total_death;
             }
           }
           // if (typeof valorEnd === 'undefined') { valorEnd = 0; }
           // if (typeof valorIni === 'undefined') { valorIni = 0; }
           TotalReport.set(key, Math.abs(valorEnd - valorIni));
+          TotalDeathReport.set(key, Math.abs(valorDeathEnd - valorDeathIni));
           self.totalState += Math.abs(valorEnd - valorIni);
+          self.totalDeathState += Math.abs(valorDeathEnd - valorDeathIni);
           maxValue = Math.max(maxValue, Math.abs(valorEnd - valorIni));
           self.rankingCounties.push({
             ibge: key,
@@ -946,6 +942,11 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
             ? 0
             : TotalReport.get(d.properties.COD_IBGE)) +
           '</text><br/>' +
+          '<text>Total óbitos: </text><text style="font-weight: 800">' +
+          (typeof TotalReport.get(d.properties.COD_IBGE) === 'undefined'
+              ? 0
+              : TotalReport.get(d.properties.COD_IBGE)) +
+          '</text><br/>' +
           '</div>'
         );
       });
@@ -1038,9 +1039,10 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
     g.call(self.tipCounty);
 
-    d3.select('#total-state').html(
-      self.formatThousandsSeperator(self.totalState)
-    );
+    d3.select('#total-state').html(self.formatThousandsSeperator(self.totalState));
+    d3.select('#total-state-deaths').html(self.formatThousandsSeperator(self.totalDeathState));
+
+    d3.select('#name-total-state').html('Total ' + self.selectedState);
 
     const countiesRankingElmnt = d3.select('#counties-ranking');
     countiesRankingElmnt.selectAll('*').remove();
@@ -1215,7 +1217,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         .attr('font-family', 'sans-serif')
         .style('font-size', 'calc(2vh)')
         .style('font-weight', 'bold')
-        .text('Total de casos no Brasil por dia');
+        .text('Casos Confirmados no Brasil por dia');
 
       const cases = g
         .selectAll('.category')
@@ -1412,7 +1414,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
       const title =
         stateParam === ''
-          ? 'Total de casos por estado'
+          ? 'Casos Confirmados por estado'
           : self.statesNames[stateParam];
 
       g.append('text')
@@ -1670,7 +1672,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
       const title =
         countyParam === ''
-          ? 'Total de casos por município (' + stateParam + ')'
+          ? 'Casos Confirmados casos por município (' + stateParam + ')'
           : typeof self.countiesNames[countyParam] === 'undefined'
           ? 'IBGE: ' + countyParam
           : self.countiesNames[countyParam];

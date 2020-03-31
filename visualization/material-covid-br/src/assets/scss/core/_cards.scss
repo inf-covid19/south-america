@@ -677,7 +677,7 @@
 }
 
 .sm-card{
-  height: calc((100vh - 70px)*0.15);
+  height: calc((100vh - 70px)*0.25);
 }
 
 .md-card{
@@ -685,16 +685,22 @@
 }
 
 .gt-card{
-  height: calc((100vh - 70px)*0.85);
+  height: calc((100vh - 70px)*0.75);
 }
 
 .table-ranking{
-  height: calc((100vh - 70px)*0.78);
+  height: calc((100vh - 70px)*0.68);
   overflow-y: auto;
 }
 
 .gt-number {
   color: #ff3d00;
+  font-weight: 800;
+  text-align: center;
+}
+
+.gt-dark-number {
+  color: #ED881A;
   font-weight: 800;
   text-align: center;
 }
@@ -712,12 +718,16 @@ div p {
 }
 
 .gt-ranking-number {
-  font-size: min(2.5vh, 2.5vw);
+  font-size: min(2.4vh, 2.4vw);
+  margin: 0px;
+}
+.gt-below-ranking-number {
+  font-size: min(2.0vh, 2.0vw);
   margin: 0px;
 }
 
 .gt-bg-ranking-number {
-  font-size: min(6.5vh, 4.5vw);
+  font-size: min(6.3vh, 4.3vw);
 }
 
 .my-custom-scrollbar {
@@ -747,6 +757,8 @@ div p {
 rect.selection {
   stroke: #ff3d00;
   fill: #ff3d00;
+  //stroke: #ff3d00;
+  //fill: #ff3d00;
   fill-opacity: 1;
 }
 
