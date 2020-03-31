@@ -706,8 +706,18 @@
 }
 
 div p {
-  padding-bottom: 0.2rem;
+  font-size: min(calc(2vh), calc(2vw));
+  padding-bottom: 0.0rem;
   margin-block-end: 0.0rem;
+}
+
+.gt-ranking-number {
+  font-size: min(2.5vh, 2.5vw);
+  margin: 0px;
+}
+
+.gt-bg-ranking-number {
+  font-size: min(6.5vh, 4.5vw);
 }
 
 .my-custom-scrollbar {
