@@ -726,7 +726,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
     for (const item in self.rankingStates) {
       // if (justOneRecord) {
       statesRankingElmnt
-        .append('p')
+        .append('tr')
         .on('mouseover', function() {
           d3.select(this).style('cursor', 'pointer');
           d3.select(this).style('font-weight', '800');
@@ -752,10 +752,9 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           }
         })
         .html(
-          '<text class="gt-number gt-ranking-number"  style="padding-left: 10px;">' +
-            self.formatThousandsSeperator(self.rankingStates[item].value) +
-            '</text> ' +
-            self.rankingStates[item].name
+          '<td class="gt-number gt-ranking-number"  style="padding-left: 11px; text-align: right">' +
+          self.formatThousandsSeperator(self.rankingStates[item].value) + 
+          '</td><td>' + self.rankingStates[item].name + '</td>'
         );
     }
     if (justOneRecordState === true) {
@@ -943,9 +942,9 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
             : TotalReport.get(d.properties.COD_IBGE)) +
           '</text><br/>' +
           '<text>Total óbitos: </text><text style="font-weight: 800">' +
-          (typeof TotalReport.get(d.properties.COD_IBGE) === 'undefined'
+          (typeof TotalDeathReport.get(d.properties.COD_IBGE) === 'undefined'
               ? 0
-              : TotalReport.get(d.properties.COD_IBGE)) +
+              : TotalDeathReport.get(d.properties.COD_IBGE)) +
           '</text><br/>' +
           '</div>'
         );
@@ -1053,7 +1052,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
     for (const item in self.rankingCounties) {
       if (justOneRecord) {
         countiesRankingElmnt
-          .append('p')
+          .append('tr')
           .on('mouseover', function() {
             d3.select(this).style('cursor', 'pointer');
             d3.select(this).style('font-weight', '800');
@@ -1071,19 +1070,17 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
             );
           })
           .html(
-            '<text class="gt-number gt-ranking-number" style="padding-left: 6px;">' +
-              self.formatThousandsSeperator(self.rankingCounties[item].value) +
-              '</text> ' +
-              self.rankingCounties[item].name
+              '<td class="gt-number gt-ranking-number"  style="padding-left: 6px; text-align: right">' +
+                self.formatThousandsSeperator(self.rankingCounties[item].value) +
+              '</td><td>' + self.rankingCounties[item].name + '</td>'
           );
       } else {
         countiesRankingElmnt
-          .append('p')
+          .append('tr')
           .html(
-            '<text class="gt-number gt-ranking-number" style="padding-left: 6px;">' +
+              '<td class="gt-number gt-ranking-number"  style="padding-left: 6px; text-align: right">' +
               self.formatThousandsSeperator(self.rankingCounties[item].value) +
-              '</text> ' +
-              self.rankingCounties[item].name
+              '</td><td>' + self.rankingCounties[item].name + '</td>'
           );
       }
     }

@@ -711,10 +711,11 @@
   text-align: center;
 }
 
-div p {
+div table tr td {
   font-size: min(calc(2vh), calc(2vw));
   padding-bottom: 0.0rem;
   margin-block-end: 0.0rem;
+  line-height: 1.3em;
 }
 
 .gt-ranking-number {
