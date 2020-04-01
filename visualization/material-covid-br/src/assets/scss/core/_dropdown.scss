@@ -85,7 +85,8 @@
     display: flex;
     flex-flow: nowrap;
     align-items: center;
-    color: $bmd-dropdown-link-color;
+    //color: $bmd-dropdown-link-color;
+    color: #aaaaaa;
     font-weight: normal;
     text-decoration: none;
 
@@ -114,9 +115,11 @@
   a:hover,
   a:focus,
   a:active {
-    @include shadow-small-color($brand-primary);
-    background-color: $brand-primary;
-    color: #FFFFFF;
+    @include shadow-small-color(#ff3d00);
+    //background-color: $brand-primary;
+    background-color: #ff3d00;
+    color: #eeeeee;
+    font-weight: 700;
   }
 }
 
@@ -202,4 +205,8 @@
     opacity: 1;
     transform: scale(1);
     top: 0;
+}
+
+.dropdown-menu.dropdown-menu-right.show {
+  background-color: #121212;
 }
