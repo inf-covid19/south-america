@@ -753,7 +753,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         })
         .html(
           '<td class="gt-number gt-ranking-number"  style="padding-left: 11px; text-align: right">' +
-          self.formatThousandsSeperator(self.rankingStates[item].value) + 
+          self.formatThousandsSeperator(self.rankingStates[item].value) +
           '</td><td>' + self.rankingStates[item].name + '</td>'
         );
     }
@@ -1041,7 +1041,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
     d3.select('#total-state').html(self.formatThousandsSeperator(self.totalState));
     d3.select('#total-state-deaths').html(self.formatThousandsSeperator(self.totalDeathState));
 
-    d3.select('#name-total-state').html('Total ' + self.selectedState);
+    d3.select('#name-total-state').html('Confirmados ' + self.selectedState);
 
     const countiesRankingElmnt = d3.select('#counties-ranking');
     countiesRankingElmnt.selectAll('*').remove();
