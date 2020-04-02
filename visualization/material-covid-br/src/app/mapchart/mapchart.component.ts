@@ -190,6 +190,13 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
                   ...lastValue
                 };
               }
+              if ( city in self.data[date]['estados'][uf]['municipios'] === false ||
+                  (city in self.data[date]['estados'][uf]['municipios'] === true
+                      && self.data[date]['estados'][uf]['municipios'][city].total_death === 0
+                      && self.data[date]['estados'][uf]['municipios'][city].total_death < self.data[lastDate]['estados'][uf]['municipios'][city].total_death)) {
+                const lastValue = self.data[lastDate]['estados'][uf]['municipios'][city];
+                self.data[date]['estados'][uf]['municipios'][city].total_death = lastValue.total_death;
+              }
             }
           );
         });
@@ -244,10 +251,10 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       // self.loadRangeSliderTime();
       self.loadResizeWindow();
 
-      /*d3.select('#multipleStatesCheckBox').on(
+      d3.select('#byDeathsCheckBox').on(
         'change',
-        self.onStatesCheckBoxChange
-      );*/
+        self.onByDeathsCheckBoxChange
+      );
       /*d3.select('#multipleCountiesCheckBox').on(
         'change',
         self.onCountiesCheckBoxChange
@@ -401,13 +408,14 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         .call(d3.event.target.move, d1.map(x));
       self.iniSelectedDay = formatTime(d1[0]);
       self.endSelectedDay = formatTime(d1[1]);
-      // if (d3.select('#multipleStatesCheckBox').property('checked')) {
+      if (d3.select('#byDeathsCheckBox').property('checked')) {
+          self.loadWidgetCountry(true);
+          self.loadWidgetState(self.selectedState, true);
+      } else {
         self.loadWidgetCountry();
-      // } else {
-      //   self.loadWidgetCountry(true);
-      // }
-      // if (d3.select('#multipleCountiesCheckBox').property('checked')) {
         self.loadWidgetState(self.selectedState);
+      }
+      // if (d3.select('#multipleCountiesCheckBox').property('checked')) {
       // } else {
         // self.loadWidgetState(self.selectedState, true);
       // }
@@ -420,10 +428,25 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
   loadResizeWindow = () => {
     this.loadRangeSliderTime();
-    this.loadWidgetCountry();
-    this.loadWidgetState(this.selectedState);
-    // this.loadCountryLineChart(this.iniSelectedDay, this.endSelectedDay);
+    if (d3.select('#byDeathsCheckBox').property('checked')) {
+      this.loadWidgetCountry(true);
+      this.loadWidgetState(this.selectedState, true);
+    } else {
+      this.loadWidgetCountry();
+      this.loadWidgetState(this.selectedState);
+    }
   }
+
+  onByDeathsCheckBoxChange = () => {
+    const self = this;
+    if (d3.select('#byDeathsCheckBox').property('checked')) {
+      self.loadWidgetCountry(true);
+      self.loadWidgetState(self.selectedState, true);
+    } else {
+      self.loadWidgetCountry();
+      self.loadWidgetState(self.selectedState);
+    }
+  };
 
   /*onStatesCheckBoxChange = () => {
     const self = this;
@@ -455,7 +478,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
     return d3.format(',d')(n);
   };
 
-  loadWidgetCountry = (justOneRecordState = false) => {
+  loadWidgetCountry = (byDeaths = false) => {
     const self = this;
     let container = d3.select('#svg-country').node() as any;
     //
@@ -517,12 +540,17 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           self.totalCountry += Math.abs(valorEnd - valorIni);
           self.totalDeathCountry += Math.abs(valorDeathEnd - valorDeathIni);
 
-          maxValue = Math.max(maxValue, Math.abs(valorEnd - valorIni));
-          self.rankingStates.push({
-            region: key,
-            name: self.statesNames[key],
-            value: Math.abs(valorEnd - valorIni)
-          });
+          if (byDeaths === true){
+            maxValue = Math.max(maxValue, Math.abs(valorDeathEnd - valorDeathIni));
+            self.rankingStates.push({ region: key, name: self.statesNames[key],
+              value: Math.abs(valorDeathEnd - valorDeathIni)
+            });
+          } else {
+            maxValue = Math.max(maxValue, Math.abs(valorEnd - valorIni));
+            self.rankingStates.push({ region: key, name: self.statesNames[key],
+              value: Math.abs(valorEnd - valorIni)
+            });
+          }
         }
         resolve(true);
       })
@@ -561,10 +589,12 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         .enter()
         .append('path')
         .attr('fill', d => {
-          const estColor =
-            typeof TotalReport.get(d.properties.UF_05) === 'undefined'
-              ? 0
-              : TotalReport.get(d.properties.UF_05);
+          let estColor = 0;
+          if (byDeaths === true){
+            estColor = typeof TotalDeathReport.get(d.properties.UF_05) === 'undefined' ? 0 : TotalDeathReport.get(d.properties.UF_05);
+          } else {
+            estColor = typeof TotalReport.get(d.properties.UF_05) === 'undefined' ? 0 : TotalReport.get(d.properties.UF_05);
+          }
           if (estColor === 0) {
             return '#000000';
           }
@@ -579,15 +609,9 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         })
         .on('click', function(d) {
           self.selectedState = d.properties.UF_05;
-          if (justOneRecordState === true) {
-            self.loadStatesLineChart(
-              self.iniSelectedDay,
-              self.endSelectedDay,
-              self.selectedState
-            );
-          }
+            // self.loadStatesLineChart(self.iniSelectedDay, self.endSelectedDay, byDeaths );
           // if (d3.select('#multipleCountiesCheckBox').property('checked')) {
-            self.loadWidgetState(self.selectedState);
+            self.loadWidgetState(self.selectedState, byDeaths);
           // } else {
           //   self.loadWidgetState(self.selectedState, true);
           // }
@@ -715,6 +739,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
     self.rankingStates.sort((a, b) => (a.value < b.value ? 1 : -1));
 
+    const classColor = byDeaths === false ? 'gt-number' : 'gt-dark-number';
     // tslint:disable-next-line:forin
     for (const item in self.rankingStates) {
       // if (justOneRecord) {
@@ -730,7 +755,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         .on('click', function() {
           self.selectedState = self.rankingStates[item].region;
           // if (d3.select('#multipleCountiesCheckBox').property('checked')) {
-            self.loadWidgetState(self.rankingStates[item].region); // without event click on counties map
+            self.loadWidgetState(self.rankingStates[item].region, byDeaths); // without event click on counties map
           // } else {
           //   self.loadWidgetState(self.rankingStates[item].region, true);
           // }
@@ -738,11 +763,11 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           //   self.loadStatesLineChart(self.iniSelectedDay, self.endSelectedDay, self.selectedState);
           // } else {
           //   self.loadStatesLineChart(self.iniSelectedDay, self.endSelectedDay);
-            self.loadCountiesLineChart(self.selectedState, self.iniSelectedDay, self.endSelectedDay);
+            self.loadCountiesLineChart(self.selectedState, self.iniSelectedDay, self.endSelectedDay, byDeaths);
           // }
         })
         .html(
-          '<td class="gt-number gt-ranking-number"  style="padding-left: 11px; text-align: right">' +
+          '<td class="' + classColor + ' gt-ranking-number"  style="padding-left: 11px; text-align: right">' +
           self.formatThousandsSeperator(self.rankingStates[item].value) +
           '</td><td>' + self.rankingStates[item].name + '</td>'
         );
@@ -750,11 +775,11 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
     // if (justOneRecordState === true) {
     //   self.loadStatesLineChart(self.iniSelectedDay, self.endSelectedDay, self.rankingStates[0].region);
     // } else {
-      self.loadStatesLineChart(self.iniSelectedDay, self.endSelectedDay);
+      self.loadStatesLineChart(self.iniSelectedDay, self.endSelectedDay, byDeaths);
     // }
   };
 
-  loadWidgetState = (stateParam, justOneRecord = false) => {
+  loadWidgetState = (stateParam, byDeaths = false) => {
     const self = this;
     let container = d3.select('#svg-county').node() as any;
     //
@@ -816,12 +841,18 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           TotalDeathReport.set(key, Math.abs(valorDeathEnd - valorDeathIni));
           self.totalState += Math.abs(valorEnd - valorIni);
           self.totalDeathState += Math.abs(valorDeathEnd - valorDeathIni);
-          maxValue = Math.max(maxValue, Math.abs(valorEnd - valorIni));
-          self.rankingCounties.push({
-            ibge: key,
-            name: self.countiesNames[key],
-            value: Math.abs(valorEnd - valorIni)
-          });
+          if (byDeaths === true){
+            maxValue = Math.max(maxValue, Math.abs(valorDeathEnd - valorDeathIni));
+            self.rankingCounties.push({ ibge: key, name: self.countiesNames[key],
+              value: Math.abs(valorDeathEnd - valorDeathIni)
+            });
+          } else {
+            maxValue = Math.max(maxValue, Math.abs(valorEnd - valorIni));
+            self.rankingCounties.push({ ibge: key, name: self.countiesNames[key],
+              value: Math.abs(valorEnd - valorIni)
+            });
+          }
+
         });
         resolve(true);
       })
@@ -869,10 +900,13 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         .enter()
         .append('path')
         .attr('fill', d => {
-          const munColor =
-            typeof TotalReport.get(d.properties.COD_IBGE) === 'undefined'
-              ? 0
-              : TotalReport.get(d.properties.COD_IBGE);
+          let munColor = 0;
+          if (byDeaths === true) {
+            munColor = typeof TotalDeathReport.get(d.properties.COD_IBGE) === 'undefined' ? 0 : TotalDeathReport.get(d.properties.COD_IBGE);
+          } else {
+            munColor = typeof TotalReport.get(d.properties.COD_IBGE) === 'undefined' ? 0 : TotalReport.get(d.properties.COD_IBGE);
+          }
+
           if (munColor === 0) {
             return '#000000';
           }
@@ -880,17 +914,6 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         })
         .attr('d', path)
         .attr('stroke', '#eeeeee')
-        .on('click', function(d) {
-          self.selectedCounty = d.properties.COD_IBGE;
-          if (justOneRecord === true) {
-            self.loadCountiesLineChart(
-              self.selectedState,
-              self.iniSelectedDay,
-              self.endSelectedDay,
-              d.properties.COD_IBGE
-            );
-          }
-        })
         .on('mouseover', self.tipCounty.show)
         .on('mouseout', function() {
           d3.select(this).attr('stroke', '#eeeeee');
@@ -1027,11 +1050,11 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
     self.rankingCounties.sort((a, b) => (a.value < b.value ? 1 : -1));
 
+    const classColor = byDeaths === false ? 'gt-number' : 'gt-dark-number';
     // tslint:disable-next-line:forin
     for (const item in self.rankingCounties) {
-      if (justOneRecord) {
-        countiesRankingElmnt
-          .append('tr')
+      countiesRankingElmnt
+        .append('tr')
           .on('mouseover', function() {
             d3.select(this).style('cursor', 'pointer');
             d3.select(this).style('font-weight', '800');
@@ -1039,38 +1062,13 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           .on('mouseout', function() {
             d3.select(this).style('font-weight', '300');
           })
-          .on('click', function() {
-            self.selectedCounty = self.rankingCounties[item].ibge;
-            self.loadCountiesLineChart(
-              self.selectedState,
-              self.iniSelectedDay,
-              self.endSelectedDay,
-              self.selectedCounty
-            );
-          })
-          .html(
-              '<td class="gt-number gt-ranking-number"  style="padding-left: 6px; text-align: right">' +
-                self.formatThousandsSeperator(self.rankingCounties[item].value) +
-              '</td><td>' + self.rankingCounties[item].name + '</td>'
-          );
-      } else {
-        countiesRankingElmnt
-          .append('tr')
-          .html(
-              '<td class="gt-number gt-ranking-number"  style="padding-left: 6px; text-align: right">' +
-              self.formatThousandsSeperator(self.rankingCounties[item].value) +
-              '</td><td>' + self.rankingCounties[item].name + '</td>'
-          );
-      }
+        .html(
+            '<td class="' + classColor + ' gt-ranking-number"  style="padding-left: 6px; text-align: right">' +
+            self.formatThousandsSeperator(self.rankingCounties[item].value) +
+            '</td><td>' + self.rankingCounties[item].name + '</td>'
+        );
     }
-
-    if (justOneRecord === true) {
-      self.selectedCounty =
-          self.countiesByStates[stateParam].indexOf(self.selectedCounty) !== -1 ? self.selectedCounty : self.rankingCounties[0].ibge;
-      self.loadCountiesLineChart(stateParam, self.iniSelectedDay, self.endSelectedDay, self.selectedCounty );
-    } else {
-      self.loadCountiesLineChart(stateParam, self.iniSelectedDay, self.endSelectedDay );
-    }
+      self.loadCountiesLineChart(stateParam, self.iniSelectedDay, self.endSelectedDay, byDeaths );
   };
 
   /*loadCountryLineChart = (iniDate, endDate) => {
@@ -1250,7 +1248,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
     g.call(self.tipLineCountry);
   };*/
 
-  loadStatesLineChart = (iniDate, endDate, stateParam = '') => {
+  loadStatesLineChart = (iniDate, endDate, byDeaths = false) => {
     const self = this;
     let container = d3.select('#svg-linechart-state').node() as any;
     if ( container === (undefined || null) || container.parentNode === (undefined || null)) { return; }
@@ -1268,13 +1266,22 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         self.rankingStates.forEach(function(rankingElm, index) {
           // if (index > 9 && stateParam === '') { return; }
           const state = rankingElm.region;
-          if (stateParam !== '' && state !== stateParam) { return; }
           let posIni = self.listDatesStates.indexOf(iniDate);
 
           while (self.listDatesStates[posIni] <= endDate) {
-            let value = typeof self.data[self.listDatesStates[posIni]] === 'undefined' ? 0 : self.data[self.listDatesStates[posIni]].total;
+            let value = 0;
+            if (byDeaths === true) {
+              value = typeof self.data[self.listDatesStates[posIni]] === 'undefined' ? 0 : self.data[self.listDatesStates[posIni]].total_death;
+            } else {
+              value = typeof self.data[self.listDatesStates[posIni]] === 'undefined' ? 0 : self.data[self.listDatesStates[posIni]].total;
+            }
+
             if (value !== 0) {
-              value = typeof self.data[self.listDatesStates[posIni]]['estados'][state] === 'undefined' ? 0 : self.data[self.listDatesStates[posIni]]['estados'][state].total;
+              if (byDeaths === true) {
+                value = typeof self.data[self.listDatesStates[posIni]]['estados'][state] === 'undefined' ? 0 : self.data[self.listDatesStates[posIni]]['estados'][state].total_death;
+              } else {
+                value = typeof self.data[self.listDatesStates[posIni]]['estados'][state] === 'undefined' ? 0 : self.data[self.listDatesStates[posIni]]['estados'][state].total;
+              }
             }
             if (value !== 0) {
               self.lineChartStates.push({ region: state, date: parseDate(self.listDatesStates[posIni]), value: value });
@@ -1302,7 +1309,10 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         .attr('transform', 'translate(' + margin.left + ',' + margin.top * 2.5 + ')');
 
     function ready([dataPoints]) {
-      const legendRange = [0, 10, 50, 100, 250, 500, 1000, 5000, 10000];
+      let legendRange = [0, 10, 50, 100, 250, 500, 1000, 5000, 10000];
+      if (byDeaths === true) {
+        legendRange = [0, 1, 5, 10, 25, 50, 100, 500, 1000];
+      }
       const colorRange = self.getPlasmaList(9);
       const qtyDays = 1 + self.listDatesStates.indexOf(self.endSelectedDay) - self.listDatesStates.indexOf(self.iniSelectedDay);
       const gridSizeX = width / qtyDays;
@@ -1745,7 +1755,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       });
     g.call(self.tipLineCounty);
   };*/
-  loadCountiesLineChart = (stateParam, iniDate, endDate, countyParam = '') => {
+  loadCountiesLineChart = (stateParam, iniDate, endDate, byDeaths = false) => {
     const self = this;
     let container = d3.select('#svg-linechart-county').node() as any;
     if ( container === (undefined || null) || container.parentNode === (undefined || null) ) {
@@ -1787,15 +1797,25 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
           let posIni = self.listDatesCounties.indexOf(iniDate);
           while (self.listDatesCounties[posIni] <= endDate) {
-            let value =
-                typeof self.data[self.listDatesCounties[posIni]] === 'undefined'
-                    ? 0
-                    : self.data[self.listDatesCounties[posIni]].total;
-            if (value !== 0) {
-              value = typeof self.data[self.listDatesCounties[posIni]]['estados'][stateParam] === 'undefined'? 0 : self.data[self.listDatesCounties[posIni]]['estados'][stateParam].total;
+            let value = 0;
+            if (byDeaths === true) {
+              value = typeof self.data[self.listDatesCounties[posIni]] === 'undefined' ? 0 : self.data[self.listDatesCounties[posIni]].total_death;
+            } else {
+              value = typeof self.data[self.listDatesCounties[posIni]] === 'undefined' ? 0 : self.data[self.listDatesCounties[posIni]].total;
             }
             if (value !== 0) {
-              value = typeof self.data[self.listDatesCounties[posIni]]['estados'][stateParam]['municipios'][county] === 'undefined' ? 0 : self.data[self.listDatesCounties[posIni]]['estados'][stateParam]['municipios'][county].total;
+              if (byDeaths === true) {
+                value = typeof self.data[self.listDatesCounties[posIni]]['estados'][stateParam] === 'undefined'? 0 : self.data[self.listDatesCounties[posIni]]['estados'][stateParam].total_death;
+              } else {
+                value = typeof self.data[self.listDatesCounties[posIni]]['estados'][stateParam] === 'undefined'? 0 : self.data[self.listDatesCounties[posIni]]['estados'][stateParam].total;
+              }
+            }
+            if (value !== 0) {
+              if (byDeaths === true) {
+                value = typeof self.data[self.listDatesCounties[posIni]]['estados'][stateParam]['municipios'][county] === 'undefined' ? 0 : self.data[self.listDatesCounties[posIni]]['estados'][stateParam]['municipios'][county].total_death;
+              } else {
+                value = typeof self.data[self.listDatesCounties[posIni]]['estados'][stateParam]['municipios'][county] === 'undefined' ? 0 : self.data[self.listDatesCounties[posIni]]['estados'][stateParam]['municipios'][county].total;
+              }
             }
             if (value !== 0) {
               self.lineChartCounties.push({ date: parseDate(self.listDatesCounties[posIni]),
@@ -1822,7 +1842,10 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         .attr('transform', 'translate(' + margin.left + ',' + margin.top * 2.5 + ')');
 
     function ready([dataPoints]) {
-      const legendRange = [0, 5, 10, 20, 50, 100, 200, 500, 1000];
+      let legendRange = [0, 5, 10, 20, 50, 100, 200, 500, 1000];
+      if (byDeaths === true) {
+        legendRange = [0, 1, 2, 5, 10, 25, 50, 75, 100];
+      }
       const colorRange = self.getPlasmaList(9);
       const qtyDays = 1 + self.listDatesStates.indexOf(self.endSelectedDay) - self.listDatesStates.indexOf(self.iniSelectedDay);
       const gridSizeX = width / qtyDays;
