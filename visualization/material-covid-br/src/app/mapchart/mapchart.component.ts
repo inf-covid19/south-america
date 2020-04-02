@@ -1354,7 +1354,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           .attr('height', 10 * gridSizeY)
           .attr('x', 0)
           .attr('y', margin.top * 2.5)
-          .attr('transform', 'translate(0,' + margin.top * 2.5 + ')');
+          .attr('transform', 'translate(0, 0)');
 
       const dayLabels = scrollGDiv.selectAll('.dayLabel')
           .data(statesList)
@@ -1875,7 +1875,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           .attr('height', 10 * gridSizeY)
           .attr('x', 0)
           .attr('y', margin.top * 2.5)
-          .attr('transform', 'translate(0,' + margin.top * 2.5 + ')');
+          .attr('transform', 'translate(0, 0)');
 
       const dayLabels = scrollGDiv.selectAll('.dayLabel')
           .data(countiesList)
