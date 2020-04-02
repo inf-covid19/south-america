@@ -2,6 +2,7 @@ import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
 import * as d3 from 'd3';
 import d3Tip from 'd3-tip';
 import * as fns from 'date-fns';
+import {isLineBreak} from 'codelyzer/angular/sourceMappingVisitor';
 
 @Component({
   selector: 'app-mapchart',
@@ -16,9 +17,10 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
   tipLineState: any;
   tipLineCounty: any;
   iniSelectedDay = '2020-01-01';
-  minSelectedDay = '2020-02-23';
+  minSelectedDay = '2020-02-24';
   endSelectedDay = '2020-03-24';
   maxSelectedDay = '2020-03-24';
+  newStatesMaxVal = 0;
   data = {};
   totalCountry = 0;
   totalState = 0;
@@ -75,6 +77,14 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       grouping: [3],
       currency: ['R$', '']
     });
+  }
+
+  colorScale = (colorRange, legendRange, value) => {
+    const color = colorRange[colorRange.length - 1];
+    for (let index = 0; index < colorRange.length; index++) {
+      if (value >= legendRange[index] && value < legendRange[index + 1]) { return colorRange[index]; }
+    }
+    return color;
   }
 
   ngOnInit() {
@@ -171,12 +181,11 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
           Object.keys(self.data[lastDate]['estados'][uf]['municipios']).forEach(
             city => {
-              if (
-                city in self.data[date]['estados'][uf]['municipios'] ===
-                false
-              ) {
-                const lastValue =
-                  self.data[lastDate]['estados'][uf]['municipios'][city];
+              if ( city in self.data[date]['estados'][uf]['municipios'] === false ||
+                  (city in self.data[date]['estados'][uf]['municipios'] === true
+                      && self.data[date]['estados'][uf]['municipios'][city].total === 0
+                      && self.data[date]['estados'][uf]['municipios'][city].total < self.data[lastDate]['estados'][uf]['municipios'][city].total)) {
+                const lastValue = self.data[lastDate]['estados'][uf]['municipios'][city];
                 self.data[date]['estados'][uf]['municipios'][city] = {
                   ...lastValue
                 };
@@ -235,14 +244,14 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       // self.loadRangeSliderTime();
       self.loadResizeWindow();
 
-      d3.select('#multipleStatesCheckBox').on(
+      /*d3.select('#multipleStatesCheckBox').on(
         'change',
         self.onStatesCheckBoxChange
-      );
-      d3.select('#multipleCountiesCheckBox').on(
+      );*/
+      /*d3.select('#multipleCountiesCheckBox').on(
         'change',
         self.onCountiesCheckBoxChange
-      );
+      );*/
     });
   }
 
@@ -392,54 +401,47 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         .call(d3.event.target.move, d1.map(x));
       self.iniSelectedDay = formatTime(d1[0]);
       self.endSelectedDay = formatTime(d1[1]);
-      if (d3.select('#multipleStatesCheckBox').property('checked')) {
+      // if (d3.select('#multipleStatesCheckBox').property('checked')) {
         self.loadWidgetCountry();
-      } else {
-        self.loadWidgetCountry(true);
-      }
-      if (d3.select('#multipleCountiesCheckBox').property('checked')) {
+      // } else {
+      //   self.loadWidgetCountry(true);
+      // }
+      // if (d3.select('#multipleCountiesCheckBox').property('checked')) {
         self.loadWidgetState(self.selectedState);
-      } else {
-        self.loadWidgetState(self.selectedState, true);
-      }
-      self.loadCountryLineChart(self.iniSelectedDay, self.endSelectedDay);
+      // } else {
+        // self.loadWidgetState(self.selectedState, true);
+      // }
+      // self.loadCountryLineChart(self.iniSelectedDay, self.endSelectedDay);
     }
     const currIniDate = new Date(parseDate(self.iniSelectedDay)).valueOf();
     const currEndDate = new Date(parseDate(self.endSelectedDay)).valueOf();
-    // gBrush.call(brush.move, [iniDate, endDate].map(x));
     gBrush.call(brush.move, [currIniDate, currEndDate].map(x));
-    // self.iniSelectedDay = formatTime(iniDate);
-    // self.endSelectedDay = formatTime(endDate);
-    // self.loadResizeWindow();
-    /*self.loadWidgetCountry();
-    self.loadWidgetState(self.selectedState);
-    self.loadCountryLineChart(self.iniSelectedDay, self.endSelectedDay);*/
   };
 
   loadResizeWindow = () => {
     this.loadRangeSliderTime();
     this.loadWidgetCountry();
     this.loadWidgetState(this.selectedState);
-    this.loadCountryLineChart(this.iniSelectedDay, this.endSelectedDay);
+    // this.loadCountryLineChart(this.iniSelectedDay, this.endSelectedDay);
   }
 
-  onStatesCheckBoxChange = () => {
+  /*onStatesCheckBoxChange = () => {
     const self = this;
     if (d3.select('#multipleStatesCheckBox').property('checked')) {
       self.loadWidgetCountry();
     } else {
       self.loadWidgetCountry(true);
     }
-  };
+  };*/
 
-  onCountiesCheckBoxChange = () => {
+  /*onCountiesCheckBoxChange = () => {
     const self = this;
     if (d3.select('#multipleCountiesCheckBox').property('checked')) {
       self.loadWidgetState(self.selectedState);
     } else {
       self.loadWidgetState(self.selectedState, true);
     }
-  };
+  };*/
 
   getPlasmaList = cant => {
     const rangeColor = [];
@@ -507,7 +509,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
             valorDeathEnd = 0;
           } else {
             valorEnd = typeof self.data[self.endSelectedDay]['estados'][key] === 'undefined' ? 0 : self.data[self.endSelectedDay]['estados'][key].total;
-            valorDeathEnd= typeof self.data[self.endSelectedDay]['estados'][key] === 'undefined' ? 0 : self.data[self.endSelectedDay]['estados'][key].total_death;
+            valorDeathEnd = typeof self.data[self.endSelectedDay]['estados'][key] === 'undefined' ? 0 : self.data[self.endSelectedDay]['estados'][key].total_death;
           }
 
           TotalReport.set(key, Math.abs(valorEnd - valorIni));
@@ -528,20 +530,11 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
     Promise.all(promises).then(ready);
 
-    const newMaxVal = self.closestMaxLegend(maxValue / 1.5);
-    const stepSize = newMaxVal / 10;
-    const yLegend = d3
-      .scaleLinear()
-      .domain(
-        d3
-          .range(
-            stepSize === 1 ? 1 : stepSize + 1,
-            Math.max(stepSize * 10, 9),
-            stepSize
-          )
-          .reverse()
-      )
-      .rangeRound([58, 88]);
+    self.newStatesMaxVal = self.closestMaxLegend(maxValue / 1.5);
+    const stepSize = self.newStatesMaxVal / 10;
+    const yLegend = d3.scaleLinear().domain(
+        d3.range(stepSize === 1 ? 1 : stepSize + 1, Math.max(stepSize * 10, 9), stepSize).reverse()
+      ).rangeRound([58, 88]);
 
     const colorRangePlasma = self.getPlasmaList(9);
     const color = d3
@@ -593,11 +586,11 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
               self.selectedState
             );
           }
-          if (d3.select('#multipleCountiesCheckBox').property('checked')) {
+          // if (d3.select('#multipleCountiesCheckBox').property('checked')) {
             self.loadWidgetState(self.selectedState);
-          } else {
-            self.loadWidgetState(self.selectedState, true);
-          }
+          // } else {
+          //   self.loadWidgetState(self.selectedState, true);
+          // }
         });
 
       const widthTrans = Math.abs(container.width - mapG.node().getBoundingClientRect().width) / 2;
@@ -736,20 +729,17 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         })
         .on('click', function() {
           self.selectedState = self.rankingStates[item].region;
-          if (d3.select('#multipleCountiesCheckBox').property('checked')) {
+          // if (d3.select('#multipleCountiesCheckBox').property('checked')) {
             self.loadWidgetState(self.rankingStates[item].region); // without event click on counties map
-          } else {
-            self.loadWidgetState(self.rankingStates[item].region, true);
-          }
-          if (justOneRecordState) {
-            self.loadStatesLineChart(
-              self.iniSelectedDay,
-              self.endSelectedDay,
-              self.selectedState
-            );
-          } else {
-            self.loadStatesLineChart(self.iniSelectedDay, self.endSelectedDay);
-          }
+          // } else {
+          //   self.loadWidgetState(self.rankingStates[item].region, true);
+          // }
+          // if (justOneRecordState) {
+          //   self.loadStatesLineChart(self.iniSelectedDay, self.endSelectedDay, self.selectedState);
+          // } else {
+          //   self.loadStatesLineChart(self.iniSelectedDay, self.endSelectedDay);
+            self.loadCountiesLineChart(self.selectedState, self.iniSelectedDay, self.endSelectedDay);
+          // }
         })
         .html(
           '<td class="gt-number gt-ranking-number"  style="padding-left: 11px; text-align: right">' +
@@ -757,15 +747,11 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           '</td><td>' + self.rankingStates[item].name + '</td>'
         );
     }
-    if (justOneRecordState === true) {
-      self.loadStatesLineChart(
-        self.iniSelectedDay,
-        self.endSelectedDay,
-        self.rankingStates[0].region
-      );
-    } else {
+    // if (justOneRecordState === true) {
+    //   self.loadStatesLineChart(self.iniSelectedDay, self.endSelectedDay, self.rankingStates[0].region);
+    // } else {
       self.loadStatesLineChart(self.iniSelectedDay, self.endSelectedDay);
-    }
+    // }
   };
 
   loadWidgetState = (stateParam, justOneRecord = false) => {
@@ -1094,7 +1080,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   };
 
-  loadCountryLineChart = (iniDate, endDate) => {
+  /*loadCountryLineChart = (iniDate, endDate) => {
     const self = this;
     let container = d3.select('#svg-linechart-country').node() as any;
     if (
@@ -1233,11 +1219,8 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         .style('stroke', function(d) {
           return self.coloresGoogle(0);
         });
-      cases
-        .selectAll('.series')
-        .data(function(d) {
-          return d.datapoints;
-        })
+      cases.selectAll('.series')
+        .data(function(d) { return d.datapoints; })
         .enter()
         .append('circle') // Uses the enter().append() method
         .attr('class', 'dot') // Assign a class for styling
@@ -1272,110 +1255,40 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         );
       });
     g.call(self.tipLineCountry);
-  };
+  };*/
 
   loadStatesLineChart = (iniDate, endDate, stateParam = '') => {
     const self = this;
     let container = d3.select('#svg-linechart-state').node() as any;
-    if (
-      container === (undefined || null) ||
-      container.parentNode === (undefined || null)
-    ) {
-      return;
-    }
+    if ( container === (undefined || null) || container.parentNode === (undefined || null)) { return; }
     container = container.parentNode.parentNode.getBoundingClientRect();
     const margin = { top: 20, right: 40, bottom: 25, left: 15 };
     const width = container.width - margin.left - margin.right;
     const height = container.height - margin.top - margin.bottom;
 
     const parseDate = d3.timeParse('%Y-%m-%d');
-
-    // Define scales
-    const xScale = d3.scaleTime().range([0, width]);
-    const yScale = d3.scaleLinear().range([height, 0]);
-    const color = d3.scaleOrdinal().range(d3.schemeCategory10);
-
-    // Define axes
-    const xAxis = d3
-      .axisBottom()
-      .tickFormat(d3.timeFormat('%d/%m'))
-      .scale(xScale);
-    const yAxis = d3
-      .axisLeft()
-      .tickFormat(self.yFormat)
-      .scale(yScale);
-
-    let minY = 100000000000;
-    let maxY = 0;
-
-    // Define lines
-    const line = d3
-      .line()
-      .curve(d3.curveMonotoneX)
-      .x(function(d) {
-        return xScale(d['date']);
-      })
-      .y(function(d) {
-        return yScale(d['value']);
-      });
-
-    d3.select('#svg-linechart-state')
-      .selectAll('*')
-      .remove();
-    // Define svg canvas
-    const svg = d3
-      .select('#svg-linechart-state')
-      .attr('viewBox', '0 0 ' + container.width + ' ' + container.height);
-    const g = svg
-      .append('g')
-      .attr(
-        'transform',
-        'translate(' + margin.right + ', ' + margin.left + ')'
-      );
-
     const statesList = [];
     const promises = [
       new Promise(resolve => {
         self.lineChartStates = [];
 
         self.rankingStates.forEach(function(rankingElm, index) {
-          if (index > 9 && stateParam === '') {
-            return;
-          }
+          // if (index > 9 && stateParam === '') { return; }
           const state = rankingElm.region;
-          if (stateParam !== '' && state !== stateParam) {
-            return;
-          }
+          if (stateParam !== '' && state !== stateParam) { return; }
           let posIni = self.listDatesStates.indexOf(iniDate);
 
-          const points = [];
           while (self.listDatesStates[posIni] <= endDate) {
-            let value =
-              typeof self.data[self.listDatesStates[posIni]] === 'undefined'
-                ? 0
-                : self.data[self.listDatesStates[posIni]].total;
+            let value = typeof self.data[self.listDatesStates[posIni]] === 'undefined' ? 0 : self.data[self.listDatesStates[posIni]].total;
             if (value !== 0) {
-              value =
-                typeof self.data[self.listDatesStates[posIni]]['estados'][
-                  state
-                ] === 'undefined'
-                  ? 0
-                  : self.data[self.listDatesStates[posIni]]['estados'][state]
-                      .total;
+              value = typeof self.data[self.listDatesStates[posIni]]['estados'][state] === 'undefined' ? 0 : self.data[self.listDatesStates[posIni]]['estados'][state].total;
             }
-            minY = Math.min(minY, value);
-            maxY = Math.max(maxY, value);
             if (value !== 0) {
-              points.push({
-                date: parseDate(self.listDatesStates[posIni]),
-                value: value,
-                region: state
-              });
+              self.lineChartStates.push({ region: state, date: parseDate(self.listDatesStates[posIni]), value: value });
             }
             posIni = posIni + 1;
           }
           statesList.push(state);
-          self.lineChartStates.push({ region: state, datapoints: points });
         });
         resolve(true);
       })
@@ -1383,114 +1296,207 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
     Promise.all(promises).then(ready);
 
+    d3.select('#svg-linechart-state').selectAll('*').remove();
+
+    const svg = d3.select('#svg-linechart-state')
+        .attr('x', 0)
+        .attr('y', margin.top)
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+        .attr('viewBox', '0 0 ' + container.width + ' ' + container.height);
+
+    const g = svg.append('g')
+        .attr('transform', 'translate(' + margin.left + ',' + margin.top * 2.5 + ')');
+
     function ready([dataPoints]) {
-      const posIni = self.listDatesStates.indexOf(iniDate);
-      const posEnd = self.listDatesStates.indexOf(endDate);
-      xScale.domain(
-        d3.extent(self.listDatesStates.slice(posIni, posEnd + 1), function(d) {
-          return parseDate(d);
-        })
-      );
-      yScale.domain([minY - 2, maxY + 30]);
+      const legendRange = [0, 10, 50, 100, 250, 500, 1000, 5000, 10000];
+      const colorRange = self.getPlasmaList(9);
+      const qtyDays = 1 + self.listDatesStates.indexOf(self.endSelectedDay) - self.listDatesStates.indexOf(self.iniSelectedDay);
+      const gridSizeX = width / qtyDays;
+      const gridSizeY = height / 12;
+      const times = self.listDatesStates.slice(
+          self.listDatesStates.indexOf(self.iniSelectedDay), self.listDatesStates.indexOf(self.endSelectedDay) + 1);
+      const legendElementWidth = width / 14;
+      const x = d3.axisBottom().tickFormat(d3.timeFormat('%d/%m')).scale(d3.scaleTime()
+              .domain([d3.timeParse('%Y-%m-%d')(self.iniSelectedDay), d3.timeParse('%Y-%m-%d')(self.endSelectedDay)])
+              .range([0, gridSizeX * (qtyDays - 0.9)]));
+      svg.append('text')
+          .attr('x', width / 3.5)
+          .attr('y', margin.top)
+          .attr('fill', '#aaaaaa')
+          .attr('font-family', 'sans-serif')
+          .style('font-size', 'calc(2vh)')
+          .style('font-weight', 'bold')
+          .text('Casos Confirmados por estado');
 
-      // Place the axes on the chart
       g.append('g')
-        .attr('class', 'x axis')
-        .attr('transform', 'translate(0,' + height + ')')
-        .call(xAxis);
+          .attr('class', 'x-axis')
+          .attr('transform', 'translate( 0,' + 0 + ')')
+          .call(x)
+          .selectAll('text')
+          .attr('y', 0)
+          .attr('x', 9)
+          .attr('dy', '.35em')
+          .attr('transform', 'rotate(-45)')
+          .style('text-anchor', 'start');
 
-      g.append('g')
-        .attr('class', 'y axis')
-        .call(yAxis)
-        .append('text')
-        .attr('class', 'label')
-        .attr('y', 6)
-        .style('text-anchor', 'beginning')
-        .attr('transform', 'rotate(-90)')
-        .text('Cases');
+      d3.selectAll('g.x-axis path.domain').remove();
+      d3.selectAll('g.x-axis line').remove();
 
-      const title =
-        stateParam === ''
-          ? 'Casos Confirmados por estado'
-          : self.statesNames[stateParam];
+      const scrollG = svg
+          .append('g')
+          .attr('id', 'scroll-y-div')
+          .attr('width', width)
+          .attr('height', 9.9 * gridSizeY)
+          .attr('transform', 'translate(0,' + margin.top * 2.5 + ')');
+      scrollG.append('rect')
+          .attr('width', width + margin.left + margin.right)
+          .attr('height', 9.9 * gridSizeY)
+          .attr('x', 0).attr('y', 0)
+          .attr('fill-opacity', 0);
 
-      g.append('text')
-        .attr('x', width / 3.5)
-        .attr('y', 5)
-        .attr('fill', '#aaaaaa')
-        .attr('font-family', 'sans-serif')
-        .style('font-size', 'calc(2vh)')
-        .style('font-weight', 'bold')
-        .text(title);
+      const scrollGDiv = svg
+          .append('svg')
+          .attr('width', width + margin.left + margin.right)
+          .attr('height', 10 * gridSizeY)
+          .attr('x', 0)
+          .attr('y', margin.top * 2.5)
+          .attr('transform', 'translate(0,' + margin.top * 2.5 + ')');
 
-      const cases = g
-        .selectAll('.category')
-        .data(self.lineChartStates)
-        .enter()
-        .append('g')
-        .attr('class', 'category');
+      const dayLabels = scrollGDiv.selectAll('.dayLabel')
+          .data(statesList)
+          .enter().append('text')
+          .text(function (d) { return d; })
+          .attr('x', 15)
+          .attr('y', function (d, i) { return i * gridSizeY; })
+          .style('text-anchor', 'end')
+          .style('fill', '#aaaaaa')
+          .attr('transform', 'translate(0,' + gridSizeY / 1.5 + ')');
 
-      cases
-        .append('path')
-        .attr('class', 'line')
-        .attr('d', function(d) {
-          return line(d.datapoints);
-        })
-        .attr('fill', 'none')
-        .style('stroke', function(d) {
-          return self.coloresGoogle(statesList.indexOf(d.region));
-        });
-      cases
-        .selectAll('.series')
-        .data(function(d) {
-          return d.datapoints;
-        })
-        .enter()
-        .append('circle')
-        .attr('class', 'dot')
-        .attr('cx', function(d) {
-          return xScale(d.date);
-        })
-        .attr('cy', function(d) {
-          return yScale(d.value);
-        })
-        .attr('stroke', function(d) {
-          return self.coloresGoogle(statesList.indexOf(d.region));
-        })
-        .attr('fill', function(d) {
-          return self.coloresGoogle(statesList.indexOf(d.region));
-        })
-        .attr('r', 2)
-        .on('mouseover', self.tipLineState.show)
-        .on('mouseout', self.tipLineState.hide);
-    }
+      const heatMapG = scrollGDiv
+          .append('g')
+          .attr('transform', 'translate(20, 0)');
+      const heatMap = heatMapG
+          .selectAll('.hour')
+          .data(self.lineChartStates)
+          .enter().append('rect')
+          .attr('x', function (d) {
+            if (d3.timeFormat('%Y-%m-%d')(d.date) !== -1) { return times.indexOf(d3.timeFormat('%Y-%m-%d')(d.date)) * gridSizeX; }
+          })
+          .attr('y', function (d) {
+            if (d3.timeFormat('%Y-%m-%d')(d.date) !== -1) { return (statesList.indexOf(d.region)) * gridSizeY; }
+          })
+          .attr('rx', 1)
+          .attr('ry', 1)
+          .attr('class', 'hour bordered')
+          .attr('width', gridSizeX)
+          .attr('height', gridSizeY)
+          .style('fill', '#ffffff')
+          .on('mouseover', self.tipLineState.show)
+          .on('mouseout', self.tipLineState.hide);
+
+      heatMap.transition().duration(1000).style('fill', function (d) {
+            return self.colorScale(colorRange, legendRange, d.value);
+          });
+
+/*BEGIN SCROLLBAR*/
+      let scrollDistance = 0;
+      const root = scrollGDiv.attr('clip-path', 'url(#scrollbox-clip-path)');
+      const clipRect = scrollGDiv.append('clipPath').attr('id', 'scrollbox-clip-path').append('rect');
+      clipRect.attr('x', 0)
+          .attr('y', 0)
+          .attr('width', width + margin.left + margin.right)
+          .attr('height', 10 * gridSizeY);
+
+      root.insert('rect', 'g')
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('width', width + margin.left + margin.right)
+          .attr('height', 10 * gridSizeY)
+          .attr('opacity', 0);
+
+      const scrollBar = scrollG.append('rect')
+          .attr('width', 2)
+          .attr('rx', 1)
+          .attr('ry', 1)
+          .attr('transform', 'translate(' + scrollG.node().getBoundingClientRect().width + ',0)');
+
+      const absoluteContentHeight = heatMapG.node().getBoundingClientRect().height;
+      const scrollbarHeight =
+          scrollG.node().getBoundingClientRect().height * scrollG.node().getBoundingClientRect().height / absoluteContentHeight;
+      scrollBar.attr('height', scrollbarHeight);
+
+      const maxScroll = Math.max(absoluteContentHeight - scrollG.node().getBoundingClientRect().height, 0);
+
+      function updateScrollPosition(diff) {
+        scrollDistance += diff;
+        scrollDistance = Math.max(0, scrollDistance);
+        scrollDistance = Math.min(maxScroll, scrollDistance);
+
+        heatMapG.attr('transform', 'translate(20, ' + (-scrollDistance) + ')');
+        dayLabels.attr('transform', 'translate(0, ' + ( gridSizeY / 1.5 - scrollDistance) + ')');
+        const scrollBarPosition = scrollDistance / maxScroll * (scrollG.node().getBoundingClientRect().height - scrollbarHeight);
+        scrollBar.attr('y', scrollBarPosition);
+      }
+
+      // Set up scroll events
+      root.on('wheel', (e) => {
+        updateScrollPosition(d3.event.deltaY)
+      });
+
+      // Set up scrollbar drag events
+      const dragBehaviour = d3.drag()
+          .on('drag', () => {
+            updateScrollPosition(d3.event.dy * maxScroll / (svg.height - scrollbarHeight))
+          });
+      scrollBar.call(dragBehaviour);
+
+/*END*/
+      const legend = g.append('g').attr('transform', 'translate(10, ' + ( 10 * gridSizeY + 2) + ')');
+
+      legend.selectAll('rect')
+          .data(legendRange)
+          .enter()
+          .append('rect')
+          .attr('fill', function(d) { return self.colorScale(colorRange, legendRange, d); })
+          .attr('x', function(d, i) { return legendElementWidth * i; })
+          .attr('width', legendElementWidth)
+          .attr('height', gridSizeY / 2);
+
+      legend.selectAll('text')
+          .data(legendRange)
+          .join('text')
+          .attr('fill', '#aaaaaa')
+          .attr('x', function(d, i) { return legendElementWidth * i; })
+          .attr('y', gridSizeY + 2)
+          .text(function(d, i) {
+            if (i === colorRange.length - 1) { return '≥' + self.yFormat(d); }
+            return '' + self.yFormat(d);
+          });
+      }
 
     self.tipLineState = d3Tip();
     self.tipLineState
-      .attr('class', 'd3-tip')
-      .offset([70, -50])
-      .html(function(d) {
-        return (
-          '<div style="opacity:0.8;background-color:' +
-          d3.select(this).attr('fill') +
-          ';padding:7px;color:white">' +
-          '<text style="font-weight: 800">' +
-          self.statesNames[d.region] +
-          '</text></br><text>' +
-          d3.timeFormat('%d/%m')(d.date) +
-          ':</text> <text style="font-weight: 800">' +
-          self.formatThousandsSeperator(d.value) +
-          '</text>' +
-          '</div>'
-        );
-      });
-    g.call(self.tipLineState);
-  };
+        .attr('class', 'd3-tip')
+        .offset([20, -80])
+        .html(function(d) {
+          return (
+              '<div style="opacity:0.8;background-color:#8b0707;padding:7px;color:white">' +
+              '<text style="font-weight: 800">' +
+              self.statesNames[d.region] +
+              '</text></br><text>' +
+              d3.timeFormat('%d/%m')(d.date) +
+              ':</text> <text style="font-weight: 800">' +
+              self.formatThousandsSeperator(d.value) +
+              '</text>' +
+              '</div>'
+          );
+        });
+    svg.call(self.tipLineState);
+    };
 
-  loadCountiesLineChart = (stateParam, iniDate, endDate, countyParam = '') => {
+  /*loadCountiesLineChart = (stateParam, iniDate, endDate, countyParam = '') => {
     const self = this;
-    // iniDate = self.listDatesCounties.indexOf(iniDate) === -1 ? self.listDatesCounties[0] : iniDate;
-    // endDate = self.listDatesCounties.indexOf(endDate) === -1 ? self.listDatesCounties[self.listDatesCounties.length - 1] : endDate;
     let container = d3.select('#svg-linechart-county').node() as any;
     if (
       container === (undefined || null) ||
@@ -1745,6 +1751,200 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         );
       });
     g.call(self.tipLineCounty);
+  };*/
+  loadCountiesLineChart = (stateParam, iniDate, endDate, countyParam = '') => {
+    const self = this;
+    let container = d3.select('#svg-linechart-county').node() as any;
+    if ( container === (undefined || null) || container.parentNode === (undefined || null) ) {
+      return;
+    }
+    container = container.parentNode.parentNode.getBoundingClientRect();
+    const margin = { top: 20, right: 40, bottom: 25, left: 45 };
+    const width = container.width - margin.left - margin.right;
+    const height = container.height - margin.top - margin.bottom;
+
+    const parseDate = d3.timeParse('%Y-%m-%d');
+
+    // Define scales
+    const xScale = d3.scaleTime().range([0, width]);
+
+    d3.select('#svg-linechart-county').selectAll('*').remove();
+
+    const countiesList = [];
+    const ibgeList = [];
+
+    let posIniTemp = self.listDatesCounties.indexOf(iniDate);
+    while (self.listDatesCounties[posIniTemp] <= endDate) {
+      if (typeof self.data[self.listDatesCounties[posIniTemp]] !== 'undefined' &&
+          typeof self.data[self.listDatesCounties[posIniTemp]]['estados'][stateParam] !== 'undefined') {
+        // tslint:disable-next-line:forin
+        for (const county in self.data[self.listDatesCounties[posIniTemp]]['estados'][stateParam]['municipios']) {
+          if (-1 === ibgeList.indexOf(county)) { ibgeList.push(county); }
+        }
+      }
+      posIniTemp = posIniTemp + 1;
+    }
+
+    const promises = [
+      new Promise(resolve => {
+        self.lineChartCounties = [];
+
+        self.rankingCounties.forEach(function(rankingElm, index) {
+          if (index > 9 && countyParam === '') {
+            return;
+          }
+          const county = rankingElm.ibge;
+          if (countyParam !== '' && county !== countyParam) {
+            return;
+          }
+
+          let posIni = self.listDatesCounties.indexOf(iniDate);
+          while (self.listDatesCounties[posIni] <= endDate) {
+            let value =
+                typeof self.data[self.listDatesCounties[posIni]] === 'undefined'
+                    ? 0
+                    : self.data[self.listDatesCounties[posIni]].total;
+            if (value !== 0) {
+              value = typeof self.data[self.listDatesCounties[posIni]]['estados'][stateParam] === 'undefined'? 0 : self.data[self.listDatesCounties[posIni]]['estados'][stateParam].total;
+            }
+            if (value !== 0) {
+              value = typeof self.data[self.listDatesCounties[posIni]]['estados'][stateParam]['municipios'][county] === 'undefined' ? 0 : self.data[self.listDatesCounties[posIni]]['estados'][stateParam]['municipios'][county].total;
+            }
+            if (value !== 0) {
+              self.lineChartCounties.push({ date: parseDate(self.listDatesCounties[posIni]),
+                value: value,
+                region: county
+              });
+            }
+            posIni = posIni + 1;
+          }
+          countiesList.push(county);
+        });
+        resolve(true);
+      })
+    ];
+    Promise.all(promises).then(ready);
+    d3.select('#svg-linechart-county').selectAll('*').remove();
+
+    const svg = d3.select('#svg-linechart-county')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+        .attr('viewBox', '0 0 ' + container.width + ' ' + container.height);
+
+    const g = svg.append('g')
+        .attr('transform', 'translate(' + margin.left + ',' + margin.top * 2.5 + ')');
+
+    function ready([dataPoints]) {
+      const legendRange = [0, 5, 10, 20, 50, 100, 200, 500, 1000];
+      const colorRange = self.getPlasmaList(9);
+      const qtyDays = 1 + self.listDatesStates.indexOf(self.endSelectedDay) - self.listDatesStates.indexOf(self.iniSelectedDay);
+      const gridSizeX = width / qtyDays;
+      const gridSizeY = height / 12;
+      const times = self.listDatesStates.slice(
+          self.listDatesStates.indexOf(self.iniSelectedDay), self.listDatesStates.indexOf(self.endSelectedDay) + 1);
+      const legendElementWidth = width / 14;
+      const x = d3.axisBottom().tickFormat(d3.timeFormat('%d/%m')).scale(d3.scaleTime()
+          .domain([d3.timeParse('%Y-%m-%d')(self.iniSelectedDay), d3.timeParse('%Y-%m-%d')(self.endSelectedDay)])
+          .range([0, gridSizeX * (qtyDays - 0.9)]));
+      svg.append('text')
+          .attr('x', width / 3.5)
+          .attr('y', margin.top)
+          .attr('fill', '#aaaaaa')
+          .attr('font-family', 'sans-serif')
+          .style('font-size', 'calc(2vh)')
+          .style('font-weight', 'bold')
+          .text('Casos Confirmados por município');
+
+      const dayLabels = g.selectAll('.dayLabel')
+          .data(countiesList)
+          .enter().append('text')
+          .text(function (d) { return d; })
+          .attr('x', 0)
+          .attr('y', function (d, i) { return i * gridSizeY; })
+          .style('text-anchor', 'end')
+          .style('fill', '#aaaaaa')
+          .attr('transform', 'translate(0,' + gridSizeY / 1.5 + ')');
+
+      g.append('g')
+          .attr('class', 'x-axis')
+          .attr('transform', 'translate(4,' + 0 + ')')
+          .call(x)
+          .selectAll('text')
+          .attr('y', 0)
+          .attr('x', 9)
+          .attr('dy', '.35em')
+          .attr('transform', 'rotate(-45)')
+          .style('text-anchor', 'start');
+
+      d3.selectAll('g.x-axis path.domain').remove();
+      d3.selectAll('g.x-axis line').remove();
+
+      const heatMapG = svg
+          .append('g')
+          .attr('transform', 'translate(50,' + margin.top * 2.5 + ')');
+      const heatMap = heatMapG
+          .selectAll('.hour')
+          .data(self.lineChartCounties)
+          .enter().append('rect')
+          .attr('x', function (d) {
+            if (d3.timeFormat('%Y-%m-%d')(d.date) !== -1) { return times.indexOf(d3.timeFormat('%Y-%m-%d')(d.date)) * gridSizeX; }
+          })
+          .attr('y', function (d) {
+            if (d3.timeFormat('%Y-%m-%d')(d.date) !== -1) { return (countiesList.indexOf(d.region)) * gridSizeY; }
+          })
+          .attr('rx', 1)
+          .attr('ry', 1)
+          .attr('class', 'hour bordered')
+          .attr('width', gridSizeX)
+          .attr('height', gridSizeY)
+          .style('fill', '#ffffff')
+          .on('mouseover', self.tipLineCounty.show)
+          .on('mouseout', self.tipLineCounty.hide);
+
+      heatMap.transition().duration(1000).style('fill', function (d) {
+        return self.colorScale(colorRange, legendRange, d.value);
+      });
+
+      const legend = g.append('g').attr('transform', 'translate(10, ' + ( 10 * gridSizeY + 2) + ')');
+
+      legend.selectAll('rect')
+          .data(legendRange)
+          .enter()
+          .append('rect')
+          .attr('fill', function(d) { return self.colorScale(colorRange, legendRange, d); })
+          .attr('x', function(d, i) { return legendElementWidth * i; })
+          .attr('width', legendElementWidth)
+          .attr('height', gridSizeY / 2);
+
+      legend.selectAll('text')
+          .data(legendRange)
+          .join('text')
+          .attr('fill', '#aaaaaa')
+          .attr('x', function(d, i) { return legendElementWidth * i; })
+          .attr('y', gridSizeY + 2)
+          .text(function(d, i) {
+            if (i === colorRange.length - 1) { return '≥' + self.yFormat(d); }
+            return '' + self.yFormat(d);
+          });
+    }
+    self.tipLineCounty = d3Tip();
+    self.tipLineCounty
+        .attr('class', 'd3-tip')
+        .offset([20, -80])
+        .html(function(d) {
+          return (
+              '<div style="opacity:0.8;background-color:#8b0707;padding:7px;color:white">' +
+              '<text style="font-weight: 800">' +
+              self.countiesNames[d.region] +
+              '</text></br><text>' +
+              d3.timeFormat('%d/%m')(d.date) +
+              ':</text> <text style="font-weight: 800">' +
+              self.formatThousandsSeperator(d.value) +
+              '</text>' +
+              '</div>'
+          );
+        });
+    svg.call(self.tipLineCounty);
   };
 
   ngAfterViewInit() {
