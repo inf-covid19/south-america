@@ -13,7 +13,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
   // svg: any;
   tipCountry: any;
   tipCounty: any;
-  tipLineCountry: any;
+  tipLineCountyName: any;
   tipLineState: any;
   tipLineCounty: any;
   iniSelectedDay = '2020-01-01';
@@ -784,10 +784,8 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         self.rankingCounties = [];
         self.totalState = 0;
         self.totalDeathState = 0;
-        // const beginDay = self.listDatesCounties.indexOf(self.iniSelectedDay) === -1 ? self.listDatesCounties[0] : self.iniSelectedDay;
         const beginDay = self.iniSelectedDay;
-        // const beginDay = self.listDatesStates[self.listDatesStates.indexOf(self.iniSelectedDay) - 1];
-        const lastDay = self.listDatesStates.indexOf(self.endSelectedDay) === self.listDatesStates.length - 1 ? self.listDatesStates[self.listDatesStates.length - 2] : self.endSelectedDay;
+        const lastDay = self.endSelectedDay;
         self.countiesByStates[stateParam].forEach(function(key, index) {
           let valorEnd = 0, valorIni = 0, valorDeathEnd = 0, valorDeathIni = 0;
           if (typeof self.data[beginDay] === 'undefined') {
@@ -814,8 +812,6 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
               valorDeathEnd = typeof self.data[lastDay]['estados'][stateParam]['municipios'][key] === 'undefined' ? 0 : self.data[lastDay]['estados'][stateParam]['municipios'][key].total_death;
             }
           }
-          // if (typeof valorEnd === 'undefined') { valorEnd = 0; }
-          // if (typeof valorIni === 'undefined') { valorIni = 0; }
           TotalReport.set(key, Math.abs(valorEnd - valorIni));
           TotalDeathReport.set(key, Math.abs(valorDeathEnd - valorDeathIni));
           self.totalState += Math.abs(valorEnd - valorIni);
@@ -906,15 +902,12 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           // Math.min(Math.abs(width - d3.select('#county-g-map').node().getBoundingClientRect().width) * 1.8, width * 0.35);
       const heightTrans =
           Math.min(Math.abs(height - mapG.node().getBoundingClientRect().height) * 1.5, height * 0.35);
-          // Math.min(Math.abs(height - d3.select('#county-g-map').node().getBoundingClientRect().height) * 1.5, height * 0.35);
-      //d3.select('#county-g-map')
       mapG.attr('transform', 'translate( ' + widthTrans + ' , ' + heightTrans + ') scale(' + scaleRatio + ')');
     }
 
     self.tipCounty = d3Tip();
     self.tipCounty
       .attr('class', 'd3-tip')
-      // .offset([100, 40])
       .html(function(d) {
         d3.select(this).attr('stroke', '#717171');
         return (
@@ -1351,7 +1344,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           .attr('transform', 'translate(0,' + margin.top * 2.5 + ')');
       scrollG.append('rect')
           .attr('width', width + margin.left + margin.right)
-          .attr('height', 9.9 * gridSizeY)
+          .attr('height', 9 * gridSizeY)
           .attr('x', 0).attr('y', 0)
           .attr('fill-opacity', 0);
 
@@ -1367,7 +1360,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           .data(statesList)
           .enter().append('text')
           .text(function (d) { return d; })
-          .attr('x', 15)
+          .attr('x', 17)
           .attr('y', function (d, i) { return i * gridSizeY; })
           .style('text-anchor', 'end')
           .style('fill', '#aaaaaa')
@@ -1790,13 +1783,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         self.lineChartCounties = [];
 
         self.rankingCounties.forEach(function(rankingElm, index) {
-          if (index > 9 && countyParam === '') {
-            return;
-          }
           const county = rankingElm.ibge;
-          if (countyParam !== '' && county !== countyParam) {
-            return;
-          }
 
           let posIni = self.listDatesCounties.indexOf(iniDate);
           while (self.listDatesCounties[posIni] <= endDate) {
@@ -1855,16 +1842,6 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           .style('font-weight', 'bold')
           .text('Casos Confirmados por município');
 
-      const dayLabels = g.selectAll('.dayLabel')
-          .data(countiesList)
-          .enter().append('text')
-          .text(function (d) { return d; })
-          .attr('x', 0)
-          .attr('y', function (d, i) { return i * gridSizeY; })
-          .style('text-anchor', 'end')
-          .style('fill', '#aaaaaa')
-          .attr('transform', 'translate(0,' + gridSizeY / 1.5 + ')');
-
       g.append('g')
           .attr('class', 'x-axis')
           .attr('transform', 'translate(4,' + 0 + ')')
@@ -1879,9 +1856,42 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       d3.selectAll('g.x-axis path.domain').remove();
       d3.selectAll('g.x-axis line').remove();
 
-      const heatMapG = svg
+
+      const scrollG = svg
           .append('g')
-          .attr('transform', 'translate(50,' + margin.top * 2.5 + ')');
+          .attr('id', 'scroll-y-div')
+          .attr('width', width)
+          .attr('height', 9.9 * gridSizeY)
+          .attr('transform', 'translate(0,' + margin.top * 2.5 + ')');
+      scrollG.append('rect')
+          .attr('width', width + margin.left + margin.right)
+          .attr('height', 9 * gridSizeY)
+          .attr('x', 0).attr('y', 0)
+          .attr('fill-opacity', 0);
+
+      const scrollGDiv = svg
+          .append('svg')
+          .attr('width', width + margin.left + margin.right)
+          .attr('height', 10 * gridSizeY)
+          .attr('x', 0)
+          .attr('y', margin.top * 2.5)
+          .attr('transform', 'translate(0,' + margin.top * 2.5 + ')');
+
+      const dayLabels = scrollGDiv.selectAll('.dayLabel')
+          .data(countiesList)
+          .enter().append('text')
+          .text(function (d) { return d; })
+          .on('mouseover', self.tipLineCountyName.show)
+          .on('mouseout', self.tipLineCountyName.hide)
+          .attr('x', 45)
+          .attr('y', function (d, i) { return i * gridSizeY; })
+          .style('text-anchor', 'end')
+          .style('fill', '#aaaaaa')
+          .attr('transform', 'translate(0,' + gridSizeY / 1.5 + ')');
+
+      const heatMapG = scrollGDiv
+          .append('g')
+          .attr('transform', 'translate(50, 0)');
       const heatMap = heatMapG
           .selectAll('.hour')
           .data(self.lineChartCounties)
@@ -1904,6 +1914,60 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       heatMap.transition().duration(1000).style('fill', function (d) {
         return self.colorScale(colorRange, legendRange, d.value);
       });
+
+      /*BEGIN SCROLLBAR*/
+      let scrollDistance = 0;
+      const root = scrollGDiv.attr('clip-path', 'url(#scrollbox-clip-path)');
+      const clipRect = scrollGDiv.append('clipPath').attr('id', 'scrollbox-clip-path').append('rect');
+      clipRect.attr('x', 0)
+          .attr('y', 0)
+          .attr('width', width + margin.left + margin.right)
+          .attr('height', 10 * gridSizeY);
+
+      root.insert('rect', 'g')
+          .attr('x', 50)
+          .attr('y', 0)
+          .attr('width', width + margin.left + margin.right)
+          .attr('height', 10 * gridSizeY)
+          .attr('opacity', 0);
+
+      const scrollBar = scrollG.append('rect')
+          .attr('width', 2)
+          .attr('rx', 1)
+          .attr('ry', 1)
+          .attr('transform', 'translate(' + scrollG.node().getBoundingClientRect().width + ',0)');
+
+      const absoluteContentHeight = heatMapG.node().getBoundingClientRect().height;
+      const scrollbarHeight =
+          scrollG.node().getBoundingClientRect().height * scrollG.node().getBoundingClientRect().height / absoluteContentHeight;
+      scrollBar.attr('height', scrollbarHeight);
+
+      const maxScroll = Math.max(absoluteContentHeight - scrollG.node().getBoundingClientRect().height, 0);
+
+      function updateScrollPosition(diff) {
+        scrollDistance += diff;
+        scrollDistance = Math.max(0, scrollDistance);
+        scrollDistance = Math.min(maxScroll, scrollDistance);
+
+        heatMapG.attr('transform', 'translate(50, ' + (-scrollDistance) + ')');
+        dayLabels.attr('transform', 'translate(0, ' + ( gridSizeY / 1.5 - scrollDistance) + ')');
+        const scrollBarPosition = scrollDistance / maxScroll * (scrollG.node().getBoundingClientRect().height - scrollbarHeight);
+        scrollBar.attr('y', scrollBarPosition);
+      }
+
+      // Set up scroll events
+      root.on('wheel', (e) => {
+        updateScrollPosition(d3.event.deltaY)
+      });
+
+      // Set up scrollbar drag events
+      const dragBehaviour = d3.drag()
+          .on('drag', () => {
+            updateScrollPosition(d3.event.dy * maxScroll / (svg.height - scrollbarHeight))
+          });
+      scrollBar.call(dragBehaviour);
+
+      /*END*/
 
       const legend = g.append('g').attr('transform', 'translate(10, ' + ( 10 * gridSizeY + 2) + ')');
 
@@ -1944,7 +2008,21 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
               '</div>'
           );
         });
+    self.tipLineCountyName = d3Tip();
+    self.tipLineCountyName
+        .attr('class', 'd3-tip')
+        .offset([20, -80])
+        .html(function(d) {
+          return (
+              '<div style="opacity:0.8;background-color:#8b0707;padding:7px;color:white">' +
+              '<text style="font-weight: 800">' +
+              self.countiesNames[d] +
+              '</text>' +
+              '</div>'
+          );
+        });
     svg.call(self.tipLineCounty);
+    svg.call(self.tipLineCountyName);
   };
 
   ngAfterViewInit() {
@@ -1952,6 +2030,5 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    // window.removeEventListener('resize', this.loadWidgetCountry);
   }
 }
