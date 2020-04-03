@@ -627,24 +627,54 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         .attr('d', path)
         .on('mouseover', self.tipCountry.show)
         .on('mouseout', function() {
-          d3.select(this).attr('stroke', '#eeeeee');
+          d3.selectAll('#country-g-map path').each(function(d) {
+            if (d3.select(this).attr('selected') !== 'true') {
+              d3.select(this).attr('stroke', '#eeeeee');
+              d3.select(this).attr('stroke-width', 2);
+            }
+          });
           self.tipCountry.hide();
         })
         .on('click', function(d) {
+          d3.selectAll('#country-g-map path').each(function() {
+              d3.select(this).attr('stroke', '#eeeeee');
+              d3.select(this).attr('stroke-width', 2);
+              d3.select(this).attr('selected', 'false');
+          });
           self.selectedState = d.properties.UF_05;
             self.loadWidgetState(self.selectedState, byDeaths, byDensidade);
+          d3.select(this)
+              .attr('stroke', '#ED881A')
+              .attr('stroke-width', 6)
+              .attr('selected', 'true');
+
         });
 
       const widthTrans = Math.abs(container.width - mapG.node().getBoundingClientRect().width) / 2;
       const heightTrans = Math.abs(container.height - mapG.node().getBoundingClientRect().height) / 2;
       mapG.attr('transform', 'translate( ' + widthTrans + ' , ' + heightTrans + ') scale(' + scaleRatio + ')');
+
+      d3.selectAll('#country-g-map path').each(function(d) {
+        if (d.properties.UF_05 === self.selectedState) {
+          d3.select(this)
+              .attr('stroke', '#ED881A')
+              .attr('stroke-width', 6)
+              .attr('selected', 'true');
+        }
+      });
     }
 
     self.tipCountry = d3Tip();
     self.tipCountry.attr('class', 'd3-tip')
         .offset([100, 120])
         .html(function(d) {
-      d3.select(this).attr('stroke', '#717171');
+          const selfTemp = this;
+          d3.selectAll('#country-g-map path').each(function() {
+            if (d3.select(this).attr('selected') !== 'true' && this === selfTemp) {
+              d3.select(this).attr('stroke', '#717171');
+              d3.select(this).attr('stroke-width', 3);
+            }
+          });
       const labelTot = byDensidade === true ? 'Densidade casos' : 'Total casos';
       const labelTotDeath = byDensidade === true ? 'Densidade óbitos' : 'Total óbitos';
       return (
@@ -1170,13 +1200,13 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const svg = d3.select('#svg-linechart-state')
         .attr('x', 0)
-        .attr('y', margin.top)
+        .attr('y', margin.top * 1.5)
         .attr('width', width + margin.left + margin.right)
         .attr('height', height + margin.top + margin.bottom)
         .attr('viewBox', '0 0 ' + container.width + ' ' + container.height);
 
     const g = svg.append('g')
-        .attr('transform', 'translate(' + margin.left + ',' + margin.top * 2.5 + ')');
+        .attr('transform', 'translate(' + margin.left + ',' + margin.top * 3 + ')');
 
     function ready([dataPoints]) {
       let legendRange = [0, 10, 50, 100, 250, 500, 1000, 5000, 10000];
@@ -1197,7 +1227,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       const times = self.listDatesStates.slice(
           self.listDatesStates.indexOf(self.iniSelectedDay), self.listDatesStates.indexOf(self.endSelectedDay) + 1);
       const legendElementWidth = width / 14;
-      const x = d3.axisBottom().tickFormat(d3.timeFormat('%d/%m')).scale(d3.scaleTime()
+      const x = d3.axisBottom().tickFormat(d3.timeFormat('%d/%m/%y')).scale(d3.scaleTime()
               .domain([d3.timeParse('%Y-%m-%d')(self.iniSelectedDay), d3.timeParse('%Y-%m-%d')(self.endSelectedDay)])
               .range([0, gridSizeX * (qtyDays - 0.9)]));
       let titleLabel = 'Casos confirmados ';
@@ -1232,7 +1262,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           .attr('id', 'scroll-y-div')
           .attr('width', width)
           .attr('height', 9.9 * gridSizeY)
-          .attr('transform', 'translate(0,' + margin.top * 2.5 + ')');
+          .attr('transform', 'translate(0,' + margin.top * 3 + ')');
       scrollG.append('rect')
           .attr('width', width + margin.left + margin.right)
           .attr('height', 9 * gridSizeY)
@@ -1244,7 +1274,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           .attr('width', width + margin.left + margin.right)
           .attr('height', 10 * gridSizeY)
           .attr('x', 0)
-          .attr('y', margin.top * 2.5)
+          .attr('y', margin.top * 3)
           .attr('transform', 'translate(0, 0)');
 
       const dayLabels = scrollGDiv.selectAll('.dayLabel')
@@ -1369,7 +1399,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
               '<text style="font-weight: 800">' +
               self.statesNames[d.region] +
               '</text></br><text>' +
-              d3.timeFormat('%d/%m')(d.date) +
+              d3.timeFormat('%d/%m/%y')(d.date) +
               ':</text> <text style="font-weight: 800">' +
               self.formatValueSeperator(d.value) +
               '</text>' +
@@ -1464,12 +1494,14 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
     d3.select('#svg-linechart-county').selectAll('*').remove();
 
     const svg = d3.select('#svg-linechart-county')
+        .attr('x', 0)
+        .attr('y', margin.top * 1.5)
         .attr('width', width + margin.left + margin.right)
         .attr('height', height + margin.top + margin.bottom)
         .attr('viewBox', '0 0 ' + container.width + ' ' + container.height);
 
     const g = svg.append('g')
-        .attr('transform', 'translate(' + margin.left + ',' + margin.top * 2.5 + ')');
+        .attr('transform', 'translate(' + margin.left + ',' + margin.top * 3 + ')');
 
     function ready([dataPoints]) {
       let legendRange = [0, 5, 10, 20, 50, 100, 200, 500, 1000];
@@ -1492,7 +1524,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       const times = self.listDatesStates.slice(
           self.listDatesStates.indexOf(self.iniSelectedDay), self.listDatesStates.indexOf(self.endSelectedDay) + 1);
       const legendElementWidth = width / 14;
-      const x = d3.axisBottom().tickFormat(d3.timeFormat('%d/%m')).scale(d3.scaleTime()
+      const x = d3.axisBottom().tickFormat(d3.timeFormat('%d/%m/%y')).scale(d3.scaleTime()
           .domain([d3.timeParse('%Y-%m-%d')(self.iniSelectedDay), d3.timeParse('%Y-%m-%d')(self.endSelectedDay)])
           .range([0, gridSizeX * (qtyDays - 0.9)]));
       let titleLabel = 'Casos confirmados ';
@@ -1528,7 +1560,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           .attr('id', 'scroll-y-div')
           .attr('width', width)
           .attr('height', 9.9 * gridSizeY)
-          .attr('transform', 'translate(0,' + margin.top * 2.5 + ')');
+          .attr('transform', 'translate(0,' + margin.top * 3 + ')');
       scrollG.append('rect')
           .attr('width', width + margin.left + margin.right)
           .attr('height', 9 * gridSizeY)
@@ -1540,7 +1572,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           .attr('width', width + margin.left + margin.right)
           .attr('height', 10 * gridSizeY)
           .attr('x', 0)
-          .attr('y', margin.top * 2.5)
+          .attr('y', margin.top * 3)
           .attr('transform', 'translate(0, 0)');
 
       const dayLabels = scrollGDiv.selectAll('.dayLabel')
@@ -1667,7 +1699,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
               '<text style="font-weight: 800">' +
               self.countiesNames[d.region] +
               '</text></br><text>' +
-              d3.timeFormat('%d/%m')(d.date) +
+              d3.timeFormat('%d/%m/%y')(d.date) +
               ':</text> <text style="font-weight: 800">' +
               self.formatValueSeperator(d.value) +
               '</text>' +
