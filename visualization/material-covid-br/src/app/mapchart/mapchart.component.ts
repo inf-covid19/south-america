@@ -33,6 +33,10 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
   lineChartCountry = [];
   lineChartStates = [];
   lineChartCounties = [];
+  popScale = 100000;
+  // popScale = 100000;
+
+  population = { total: 0 };
 
   counts = [ 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000,
     2000000, 5000000, 10000000, 20000000, 50000000, 100000000, 200000000, 500000000,
@@ -95,6 +99,13 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       end: new Date()
     };
 
+    Object.keys(this.statesNames).forEach(uf => {
+      self.population[uf] = {
+        population: 0,
+        municipios: {}
+      };
+    });
+
     const dateSerie = fns.eachDayOfInterval(serieInterval);
 
     dateSerie.forEach(d => {
@@ -113,7 +124,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       });
     });
 
-    const dataPromises = Object.keys(this.statesNames).map(uf => {
+    let dataPromises = Object.keys(this.statesNames).map(uf => {
       return d3.dsv(
         ',',
         `https://raw.githubusercontent.com/inf-covid19/covid19-data/master/data/brazil/${uf.toLowerCase()}.csv`,
@@ -157,6 +168,16 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       );
     });
+
+    dataPromises.push(
+        d3.dsv( ',', './assets/csv/population.csv',
+            function(d) {
+              self.population.total += parseInt(d.population);
+              self.population[d.state].population += parseInt(d.population);
+              self.population[d.state]['municipios'][d.cod_ibge] = parseInt(d.population);
+            }
+        )
+    );
 
     Promise.all(dataPromises).then(values => {
       dateSerie.slice(1).forEach((d, i) => {
@@ -251,14 +272,8 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       // self.loadRangeSliderTime();
       self.loadResizeWindow();
 
-      d3.select('#byDeathsCheckBox').on(
-        'change',
-        self.onByDeathsCheckBoxChange
-      );
-      /*d3.select('#multipleCountiesCheckBox').on(
-        'change',
-        self.onCountiesCheckBoxChange
-      );*/
+      d3.select('#byDeathsCheckBox').on( 'change', self.onByDeathsCheckBoxChange );
+      d3.select('#byDensidadeCheckBox').on( 'change', self.onByDensidadeCheckBoxChange );
     });
   }
 
@@ -408,18 +423,17 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         .call(d3.event.target.move, d1.map(x));
       self.iniSelectedDay = formatTime(d1[0]);
       self.endSelectedDay = formatTime(d1[1]);
-      if (d3.select('#byDeathsCheckBox').property('checked')) {
-          self.loadWidgetCountry(true);
-          self.loadWidgetState(self.selectedState, true);
-      } else {
-        self.loadWidgetCountry();
-        self.loadWidgetState(self.selectedState);
+      let byDensidade = false;
+      if (d3.select('#byDensidadeCheckBox').property('checked')) {
+        byDensidade = true;
       }
-      // if (d3.select('#multipleCountiesCheckBox').property('checked')) {
-      // } else {
-        // self.loadWidgetState(self.selectedState, true);
-      // }
-      // self.loadCountryLineChart(self.iniSelectedDay, self.endSelectedDay);
+      if (d3.select('#byDeathsCheckBox').property('checked')) {
+          self.loadWidgetCountry(true, byDensidade);
+          self.loadWidgetState(self.selectedState, true, byDensidade);
+      } else {
+        self.loadWidgetCountry(false, byDensidade);
+        self.loadWidgetState(self.selectedState, false, byDensidade);
+      }
     }
     const currIniDate = new Date(parseDate(self.iniSelectedDay)).valueOf();
     const currEndDate = new Date(parseDate(self.endSelectedDay)).valueOf();
@@ -439,32 +453,33 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onByDeathsCheckBoxChange = () => {
     const self = this;
+    let byDensidade = false;
+    if (d3.select('#byDensidadeCheckBox').property('checked')) {
+      byDensidade = true;
+    }
     if (d3.select('#byDeathsCheckBox').property('checked')) {
-      self.loadWidgetCountry(true);
-      self.loadWidgetState(self.selectedState, true);
+      self.loadWidgetCountry(true, byDensidade);
+      self.loadWidgetState(self.selectedState, true, byDensidade);
     } else {
-      self.loadWidgetCountry();
-      self.loadWidgetState(self.selectedState);
+      self.loadWidgetCountry(false, byDensidade);
+      self.loadWidgetState(self.selectedState, false, byDensidade);
     }
   };
 
-  /*onStatesCheckBoxChange = () => {
+  onByDensidadeCheckBoxChange = () => {
     const self = this;
-    if (d3.select('#multipleStatesCheckBox').property('checked')) {
-      self.loadWidgetCountry();
-    } else {
-      self.loadWidgetCountry(true);
+    let byDeath = false;
+    if (d3.select('#byDeathsCheckBox').property('checked')) {
+      byDeath = true;
     }
-  };*/
-
-  /*onCountiesCheckBoxChange = () => {
-    const self = this;
-    if (d3.select('#multipleCountiesCheckBox').property('checked')) {
-      self.loadWidgetState(self.selectedState);
+    if (d3.select('#byDensidadeCheckBox').property('checked')) {
+      self.loadWidgetCountry(byDeath, true);
+      self.loadWidgetState(self.selectedState, byDeath, true);
     } else {
-      self.loadWidgetState(self.selectedState, true);
+      self.loadWidgetCountry(byDeath, false);
+      self.loadWidgetState(self.selectedState, byDeath, false);
     }
-  };*/
+  };
 
   getPlasmaList = cant => {
     const rangeColor = [];
@@ -474,11 +489,15 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
     return rangeColor;
   };
 
-  formatThousandsSeperator = n => {
-    return d3.format(',d')(n);
+  formatValueSeperator = n => {
+    if (d3.select('#byDensidadeCheckBox').property('checked')) {
+      return d3.format(',.2f')(n);
+    } else {
+      return d3.format(',d')(n);
+    }
   };
 
-  loadWidgetCountry = (byDeaths = false) => {
+  loadWidgetCountry = (byDeaths = false, byDensidade = false) => {
     const self = this;
     let container = d3.select('#svg-country').node() as any;
     //
@@ -516,6 +535,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         self.totalCountry = 0;
         self.totalDeathCountry = 0;
         self.rankingStates = [];
+        let population = self.popScale;
         // tslint:disable-next-line:forin
         for (const key in self.countiesByStates) {
           // for (const key in self.data[self.endSelectedDay]['estados']) {
@@ -535,23 +555,33 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
             valorDeathEnd = typeof self.data[self.endSelectedDay]['estados'][key] === 'undefined' ? 0 : self.data[self.endSelectedDay]['estados'][key].total_death;
           }
 
-          TotalReport.set(key, Math.abs(valorEnd - valorIni));
-          TotalDeathReport.set(key, Math.abs(valorDeathEnd - valorDeathIni));
+          if (byDensidade === true) {
+            population = self.population[key].population;
+          }
+
+          TotalReport.set(key, Math.abs(valorEnd - valorIni) * (self.popScale / population));
+          TotalDeathReport.set(key, Math.abs(valorDeathEnd - valorDeathIni) * (self.popScale / population));
           self.totalCountry += Math.abs(valorEnd - valorIni);
           self.totalDeathCountry += Math.abs(valorDeathEnd - valorDeathIni);
 
-          if (byDeaths === true){
-            maxValue = Math.max(maxValue, Math.abs(valorDeathEnd - valorDeathIni));
+          if (byDeaths === true) {
+            maxValue = Math.max(maxValue, Math.abs(valorDeathEnd - valorDeathIni) * (self.popScale / population));
             self.rankingStates.push({ region: key, name: self.statesNames[key],
-              value: Math.abs(valorDeathEnd - valorDeathIni)
+              value: Math.abs(valorDeathEnd - valorDeathIni) * (self.popScale / population)
             });
           } else {
-            maxValue = Math.max(maxValue, Math.abs(valorEnd - valorIni));
+            maxValue = Math.max(maxValue, Math.abs(valorEnd - valorIni) * (self.popScale / population));
             self.rankingStates.push({ region: key, name: self.statesNames[key],
-              value: Math.abs(valorEnd - valorIni)
+              value: Math.abs(valorEnd - valorIni) * (self.popScale / population)
             });
           }
         }
+
+        if ( byDensidade === true ) {
+          self.totalCountry = self.totalCountry * (self.popScale / self.population.total);
+          self.totalDeathCountry = self.totalDeathCountry * (self.popScale / self.population.total);
+        }
+
         resolve(true);
       })
     ];
@@ -565,16 +595,9 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       ).rangeRound([58, 88]);
 
     const colorRangePlasma = self.getPlasmaList(9);
-    const color = d3
-      .scaleThreshold()
-      .domain(
-        d3.range(
-          stepSize === 1 ? 1 : stepSize + 1,
-          Math.max(stepSize * 10, 9),
-          stepSize
-        )
-      )
-      .range(colorRangePlasma);
+    const color = d3.scaleThreshold().domain(
+        d3.range(stepSize === 1 ? 1 : stepSize + 1, Math.max(stepSize * 10, 9), stepSize)
+      ).range(colorRangePlasma);
 
     const mapG = d3.select('#svg-country').append('g');
     function ready([coduf]) {
@@ -590,7 +613,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         .append('path')
         .attr('fill', d => {
           let estColor = 0;
-          if (byDeaths === true){
+          if (byDeaths === true) {
             estColor = typeof TotalDeathReport.get(d.properties.UF_05) === 'undefined' ? 0 : TotalDeathReport.get(d.properties.UF_05);
           } else {
             estColor = typeof TotalReport.get(d.properties.UF_05) === 'undefined' ? 0 : TotalReport.get(d.properties.UF_05);
@@ -609,12 +632,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         })
         .on('click', function(d) {
           self.selectedState = d.properties.UF_05;
-            // self.loadStatesLineChart(self.iniSelectedDay, self.endSelectedDay, byDeaths );
-          // if (d3.select('#multipleCountiesCheckBox').property('checked')) {
-            self.loadWidgetState(self.selectedState, byDeaths);
-          // } else {
-          //   self.loadWidgetState(self.selectedState, true);
-          // }
+            self.loadWidgetState(self.selectedState, byDeaths, byDensidade);
         });
 
       const widthTrans = Math.abs(container.width - mapG.node().getBoundingClientRect().width) / 2;
@@ -633,12 +651,12 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         '<text>Total casos: </text><text style="font-weight: 800">' +
         (typeof TotalReport.get(d.properties.UF_05) === 'undefined'
           ? 0
-          : TotalReport.get(d.properties.UF_05)) +
+          : self.formatValueSeperator(TotalReport.get(d.properties.UF_05))) +
         '</text><br/>' +
         '<text>Total óbitos: </text><text style="font-weight: 800">' +
         (typeof TotalDeathReport.get(d.properties.UF_05) === 'undefined'
             ? 0
-            : TotalDeathReport.get(d.properties.UF_05)) +
+            : self.formatValueSeperator(TotalDeathReport.get(d.properties.UF_05))) +
         '</text><br/>' +
         '</div>'
       );
@@ -717,13 +735,13 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
               return '';
             }
             if (i === 0) {
-              return '≤' + (y - 1) + '';
+              return '≤' + self.formatValueSeperator(y - 1) + '';
             }
             if (i === 8) {
-              return '≥' + lastTick + '';
+              return '≥' + self.formatValueSeperator(lastTick) + '';
             }
             lastTick = y;
-            return y - 1 + '';
+            return self.formatValueSeperator(y - 1) + '';
           })
           .tickValues(color.domain())
       )
@@ -731,8 +749,8 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       .remove();
 
     // @ts-ignore
-    d3.select('#total-country').html( self.formatThousandsSeperator(self.totalCountry) );
-    d3.select('#total-country-deaths').html( self.formatThousandsSeperator(self.totalDeathCountry) );
+    d3.select('#total-country').html( self.formatValueSeperator(self.totalCountry) );
+    d3.select('#total-country-deaths').html( self.formatValueSeperator(self.totalDeathCountry) );
 
     const statesRankingElmnt = d3.select('#states-ranking');
     statesRankingElmnt.selectAll('*').remove();
@@ -754,32 +772,23 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         })
         .on('click', function() {
           self.selectedState = self.rankingStates[item].region;
-          // if (d3.select('#multipleCountiesCheckBox').property('checked')) {
-            self.loadWidgetState(self.rankingStates[item].region, byDeaths); // without event click on counties map
-          // } else {
-          //   self.loadWidgetState(self.rankingStates[item].region, true);
-          // }
-          // if (justOneRecordState) {
-          //   self.loadStatesLineChart(self.iniSelectedDay, self.endSelectedDay, self.selectedState);
-          // } else {
-          //   self.loadStatesLineChart(self.iniSelectedDay, self.endSelectedDay);
-            self.loadCountiesLineChart(self.selectedState, self.iniSelectedDay, self.endSelectedDay, byDeaths);
-          // }
+            self.loadWidgetState(self.rankingStates[item].region, byDeaths, byDensidade); // without event click on counties map
+            self.loadCountiesLineChart(self.selectedState, self.iniSelectedDay, self.endSelectedDay, byDeaths, byDensidade);
         })
         .html(
           '<td class="' + classColor + ' gt-ranking-number"  style="padding-left: 11px; text-align: right">' +
-          self.formatThousandsSeperator(self.rankingStates[item].value) +
+          self.formatValueSeperator(self.rankingStates[item].value) +
           '</td><td>' + self.rankingStates[item].name + '</td>'
         );
     }
     // if (justOneRecordState === true) {
     //   self.loadStatesLineChart(self.iniSelectedDay, self.endSelectedDay, self.rankingStates[0].region);
     // } else {
-      self.loadStatesLineChart(self.iniSelectedDay, self.endSelectedDay, byDeaths);
+      self.loadStatesLineChart(self.iniSelectedDay, self.endSelectedDay, byDeaths, byDensidade);
     // }
   };
 
-  loadWidgetState = (stateParam, byDeaths = false) => {
+  loadWidgetState = (stateParam, byDeaths = false, byDensidade = false) => {
     const self = this;
     let container = d3.select('#svg-county').node() as any;
     //
@@ -796,7 +805,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
     d3.select('#svg-county').selectAll('*').remove();
 
-    const svg = d3.select('#svg-county').attr('viewBox','0 0 ' + container.width * 1.3 + ' ' + container.height * 1.3);
+    const svg = d3.select('#svg-county').attr('viewBox', '0 0 ' + container.width * 1.3 + ' ' + container.height * 1.3);
 
     const TotalReport = d3.map();
     const TotalDeathReport = d3.map();
@@ -811,6 +820,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
         self.totalDeathState = 0;
         const beginDay = self.iniSelectedDay;
         const lastDay = self.endSelectedDay;
+        let population = self.popScale;
         self.countiesByStates[stateParam].forEach(function(key, index) {
           let valorEnd = 0, valorIni = 0, valorDeathEnd = 0, valorDeathIni = 0;
           if (typeof self.data[beginDay] === 'undefined') {
@@ -837,23 +847,31 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
               valorDeathEnd = typeof self.data[lastDay]['estados'][stateParam]['municipios'][key] === 'undefined' ? 0 : self.data[lastDay]['estados'][stateParam]['municipios'][key].total_death;
             }
           }
-          TotalReport.set(key, Math.abs(valorEnd - valorIni));
-          TotalDeathReport.set(key, Math.abs(valorDeathEnd - valorDeathIni));
-          self.totalState += Math.abs(valorEnd - valorIni);
-          self.totalDeathState += Math.abs(valorDeathEnd - valorDeathIni);
-          if (byDeaths === true){
-            maxValue = Math.max(maxValue, Math.abs(valorDeathEnd - valorDeathIni));
-            self.rankingCounties.push({ ibge: key, name: self.countiesNames[key],
-              value: Math.abs(valorDeathEnd - valorDeathIni)
-            });
-          } else {
-            maxValue = Math.max(maxValue, Math.abs(valorEnd - valorIni));
-            self.rankingCounties.push({ ibge: key, name: self.countiesNames[key],
-              value: Math.abs(valorEnd - valorIni)
-            });
+          if (byDensidade === true) {
+            population = typeof self.population[stateParam]['municipios'][key] === 'undefined' ? 1000000 :
+                self.population[stateParam]['municipios'][key];
           }
 
+          TotalReport.set(key, Math.abs(valorEnd - valorIni) * (self.popScale / population));
+          TotalDeathReport.set(key, Math.abs(valorDeathEnd - valorDeathIni) * (self.popScale / population));
+          self.totalState += Math.abs(valorEnd - valorIni);
+          self.totalDeathState += Math.abs(valorDeathEnd - valorDeathIni);
+          if (byDeaths === true) {
+            maxValue = Math.max(maxValue, Math.abs(valorDeathEnd - valorDeathIni) * (self.popScale / population));
+            self.rankingCounties.push({ ibge: key, name: self.countiesNames[key],
+              value: Math.abs(valorDeathEnd - valorDeathIni) * (self.popScale / population)
+            });
+          } else {
+            maxValue = Math.max(maxValue, Math.abs(valorEnd - valorIni) * (self.popScale / population));
+            self.rankingCounties.push({ ibge: key, name: self.countiesNames[key],
+              value: Math.abs(valorEnd - valorIni) * (self.popScale / population)
+            });
+          }
         });
+        if (byDensidade === true) {
+          self.totalState = self.totalState * (self.popScale / self.population[stateParam].population);
+          self.totalDeathState = self.totalDeathState * (self.popScale / self.population[stateParam].population);
+        }
         resolve(true);
       })
     ];
@@ -941,12 +959,12 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           '<text>Total casos: </text><text style="font-weight: 800">' +
           (typeof TotalReport.get(d.properties.COD_IBGE) === 'undefined'
             ? 0
-            : TotalReport.get(d.properties.COD_IBGE)) +
+            : self.formatValueSeperator(TotalReport.get(d.properties.COD_IBGE))) +
           '</text><br/>' +
           '<text>Total óbitos: </text><text style="font-weight: 800">' +
           (typeof TotalDeathReport.get(d.properties.COD_IBGE) === 'undefined'
               ? 0
-              : TotalDeathReport.get(d.properties.COD_IBGE)) +
+              : self.formatValueSeperator(TotalDeathReport.get(d.properties.COD_IBGE))) +
           '</text><br/>' +
           '</div>'
         );
@@ -1040,8 +1058,8 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
     g.call(self.tipCounty);
 
-    d3.select('#total-state').html(self.formatThousandsSeperator(self.totalState));
-    d3.select('#total-state-deaths').html(self.formatThousandsSeperator(self.totalDeathState));
+    d3.select('#total-state').html(self.formatValueSeperator(self.totalState));
+    d3.select('#total-state-deaths').html(self.formatValueSeperator(self.totalDeathState));
 
     d3.select('#name-total-state').html('Confirmados ' + self.selectedState);
 
@@ -1064,191 +1082,15 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           })
         .html(
             '<td class="' + classColor + ' gt-ranking-number"  style="padding-left: 6px; text-align: right">' +
-            self.formatThousandsSeperator(self.rankingCounties[item].value) +
+            self.formatValueSeperator(self.rankingCounties[item].value) +
             '</td><td>' + self.rankingCounties[item].name + '</td>'
         );
     }
-      self.loadCountiesLineChart(stateParam, self.iniSelectedDay, self.endSelectedDay, byDeaths );
+      self.loadCountiesLineChart(stateParam, self.iniSelectedDay, self.endSelectedDay, byDeaths, byDensidade );
   };
 
-  /*loadCountryLineChart = (iniDate, endDate) => {
-    const self = this;
-    let container = d3.select('#svg-linechart-country').node() as any;
-    if (
-      container === (undefined || null) ||
-      container.parentNode === (undefined || null)
-    ) {
-      return;
-    }
-    container = container.parentNode.parentNode.getBoundingClientRect();
-    const margin = { top: 20, right: 40, bottom: 25, left: 15 };
-    const width = container.width - margin.left - margin.right;
-    const height = container.height - margin.top - margin.bottom;
 
-    const parseDate = d3.timeParse('%Y-%m-%d');
-
-    // Define scales
-    const xScale = d3.scaleTime().range([0, width]);
-    const yScale = d3.scaleLinear().range([height, 0]);
-    const color = d3.scaleOrdinal().range(d3.schemeCategory10);
-
-    // Define axes
-    const xAxis = d3
-      .axisBottom()
-      .tickFormat(d3.timeFormat('%d/%m'))
-      .scale(xScale);
-    const yAxis = d3
-      .axisLeft()
-      .tickFormat(self.yFormat)
-      .scale(yScale);
-
-    let minY = 100000000000;
-    let maxY = 0;
-
-    // Define lines
-    const line = d3
-      .line()
-      .curve(d3.curveMonotoneX)
-      .x(function(d) {
-        return xScale(d['date']);
-      })
-      .y(function(d) {
-        return yScale(d['value']);
-      });
-
-    d3.select('#svg-linechart-country')
-      .selectAll('*')
-      .remove();
-    // Define svg canvas
-    const svg = d3
-      .select('#svg-linechart-country')
-      .attr('viewBox', '0 0 ' + container.width + ' ' + container.height);
-    const g = svg
-      .append('g')
-      .attr(
-        'transform',
-        'translate(' + margin.right + ', ' + margin.left + ')'
-      );
-
-    const promises = [
-      new Promise(resolve => {
-        self.lineChartCountry = [];
-        let posIni = self.listDatesStates.indexOf(iniDate);
-
-        const points = [];
-        while (self.listDatesStates[posIni] <= endDate) {
-          const value =
-            typeof self.data[self.listDatesStates[posIni]] === 'undefined'
-              ? 0
-              : self.data[self.listDatesStates[posIni]].total;
-          minY = Math.min(minY, value);
-          maxY = Math.max(maxY, value);
-          if (value !== 0) {
-            points.push({
-              date: parseDate(self.listDatesStates[posIni]),
-              value: value
-            });
-          }
-          posIni = posIni + 1;
-        }
-        self.lineChartCountry.push({ region: 'Brasil', datapoints: points });
-        resolve(true);
-      })
-    ];
-
-    Promise.all(promises).then(ready);
-
-    function ready([dataPoints]) {
-      const posIni = self.listDatesStates.indexOf(iniDate);
-      const posEnd = self.listDatesStates.indexOf(endDate);
-      xScale.domain(
-        d3.extent(self.listDatesStates.slice(posIni, posEnd + 1), function(d) {
-          return parseDate(d);
-        })
-      );
-      yScale.domain([minY - 2, maxY + 30]);
-
-      // Place the axes on the chart
-      g.append('g')
-        .attr('class', 'x axis')
-        .attr('transform', 'translate(0,' + height + ')')
-        .call(xAxis);
-
-      g.append('g')
-        .attr('class', 'y axis')
-        .call(yAxis)
-        .append('text')
-        .attr('class', 'label')
-        .attr('y', 6)
-        .style('text-anchor', 'beginning')
-        .attr('transform', 'rotate(-90)')
-        .text('Cases');
-
-      g.append('text')
-        .attr('x', width / 4)
-        .attr('y', 5)
-        .attr('fill', '#aaaaaa')
-        .attr('font-family', 'sans-serif')
-        .style('font-size', 'calc(2vh)')
-        .style('font-weight', 'bold')
-        .text('Casos Confirmados no Brasil por dia');
-
-      const cases = g
-        .selectAll('.category')
-        .data(self.lineChartCountry)
-        .enter()
-        .append('g')
-        .attr('class', 'category');
-
-      cases
-        .append('path')
-        .attr('class', 'line')
-        .attr('d', function(d) {
-          return line(d.datapoints);
-        })
-        .attr('fill', 'none')
-        .style('stroke', function(d) {
-          return self.coloresGoogle(0);
-        });
-      cases.selectAll('.series')
-        .data(function(d) { return d.datapoints; })
-        .enter()
-        .append('circle') // Uses the enter().append() method
-        .attr('class', 'dot') // Assign a class for styling
-        .attr('cx', function(d) {
-          return xScale(d.date);
-        })
-        .attr('cy', function(d) {
-          return yScale(d.value);
-        })
-        .attr('stroke', self.coloresGoogle(0))
-        .attr('fill', self.coloresGoogle(0))
-        .attr('r', 2)
-        .on('mouseover', self.tipLineCountry.show)
-        .on('mouseout', self.tipLineCountry.hide);
-    }
-
-    self.tipLineCountry = d3Tip();
-    self.tipLineCountry
-      .attr('class', 'd3-tip')
-      .offset([50, -50])
-      .html(function(d) {
-        return (
-          '<div style="opacity:0.8;background-color:' +
-          d3.select(this).attr('fill') +
-          ';padding:7px;color:white">' +
-          '<text>' +
-          d3.timeFormat('%d/%m')(d.date) +
-          ':</text> <text style="font-weight: 800">' +
-          self.formatThousandsSeperator(d.value) +
-          '</text>' +
-          '</div>'
-        );
-      });
-    g.call(self.tipLineCountry);
-  };*/
-
-  loadStatesLineChart = (iniDate, endDate, byDeaths = false) => {
+  loadStatesLineChart = (iniDate, endDate, byDeaths = false, byDensidade = false) => {
     const self = this;
     let container = d3.select('#svg-linechart-state').node() as any;
     if ( container === (undefined || null) || container.parentNode === (undefined || null)) { return; }
@@ -1262,11 +1104,15 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
     const promises = [
       new Promise(resolve => {
         self.lineChartStates = [];
-
+        let population = self.popScale;
         self.rankingStates.forEach(function(rankingElm, index) {
           // if (index > 9 && stateParam === '') { return; }
           const state = rankingElm.region;
           let posIni = self.listDatesStates.indexOf(iniDate);
+
+          if (byDensidade) {
+            population = self.population[state].population;
+          }
 
           while (self.listDatesStates[posIni] <= endDate) {
             let value = 0;
@@ -1284,6 +1130,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
               }
             }
             if (value !== 0) {
+              value = value * (self.popScale / population);
               self.lineChartStates.push({ region: state, date: parseDate(self.listDatesStates[posIni]), value: value });
             }
             posIni = posIni + 1;
@@ -1312,6 +1159,13 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       let legendRange = [0, 10, 50, 100, 250, 500, 1000, 5000, 10000];
       if (byDeaths === true) {
         legendRange = [0, 1, 5, 10, 25, 50, 100, 500, 1000];
+        if (byDensidade === true) {
+          legendRange = [0, 0.25, 0.5, 0.75, 1, 5, 10, 25, 50];
+        }
+      } else {
+        if (byDensidade === true) {
+          legendRange = [0, 0.5, 1, 2, 5, 10, 20, 50, 100];
+        }
       }
       const colorRange = self.getPlasmaList(9);
       const qtyDays = 1 + self.listDatesStates.indexOf(self.endSelectedDay) - self.listDatesStates.indexOf(self.iniSelectedDay);
@@ -1425,7 +1279,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           .attr('transform', 'translate(' + scrollG.node().getBoundingClientRect().width + ',0)');
 
       const absoluteContentHeight = heatMapG.node().getBoundingClientRect().height;
-      const scrollbarHeight =
+      const scrollbarHeight = absoluteContentHeight === 0 ? 0 :
           scrollG.node().getBoundingClientRect().height * scrollG.node().getBoundingClientRect().height / absoluteContentHeight;
       scrollBar.attr('height', scrollbarHeight);
 
@@ -1490,7 +1344,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
               '</text></br><text>' +
               d3.timeFormat('%d/%m')(d.date) +
               ':</text> <text style="font-weight: 800">' +
-              self.formatThousandsSeperator(d.value) +
+              self.formatValueSeperator(d.value) +
               '</text>' +
               '</div>'
           );
@@ -1498,264 +1352,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
     svg.call(self.tipLineState);
     };
 
-  /*loadCountiesLineChart = (stateParam, iniDate, endDate, countyParam = '') => {
-    const self = this;
-    let container = d3.select('#svg-linechart-county').node() as any;
-    if (
-      container === (undefined || null) ||
-      container.parentNode === (undefined || null)
-    ) {
-      return;
-    }
-    container = container.parentNode.parentNode.getBoundingClientRect();
-    const margin = { top: 20, right: 40, bottom: 25, left: 15 };
-    const width = container.width - margin.left - margin.right;
-    const height = container.height - margin.top - margin.bottom;
-
-    const parseDate = d3.timeParse('%Y-%m-%d');
-
-    // Define scales
-    const xScale = d3.scaleTime().range([0, width]);
-    const yScale = d3.scaleLinear().range([height, 0]);
-    const color = d3.scaleOrdinal().range(d3.schemeCategory10);
-
-    // Define axes
-    const xAxis = d3
-      .axisBottom()
-      .tickFormat(d3.timeFormat('%d/%m'))
-      .scale(xScale);
-    const yAxis = d3
-      .axisLeft()
-      .tickFormat(self.yFormat)
-      .scale(yScale);
-
-    let minY = 100000000000;
-    let maxY = 0;
-
-    // Define lines
-    const line = d3
-      .line()
-      .curve(d3.curveMonotoneX)
-      .x(function(d) {
-        return xScale(d['date']);
-      })
-      .y(function(d) {
-        return yScale(d['value']);
-      });
-
-    d3.select('#svg-linechart-county')
-      .selectAll('*')
-      .remove();
-    // Define svg canvas
-    const svg = d3
-      .select('#svg-linechart-county')
-      .attr('viewBox', '0 0 ' + container.width + ' ' + container.height);
-    const g = svg
-      .append('g')
-      .attr(
-        'transform',
-        'translate(' + margin.right + ', ' + margin.left + ')'
-      );
-
-    const countiesList = [];
-    const ibgeList = [];
-
-    let posIniTemp = self.listDatesCounties.indexOf(iniDate);
-    while (self.listDatesCounties[posIniTemp] <= endDate) {
-      if (
-        typeof self.data[self.listDatesCounties[posIniTemp]] !== 'undefined' &&
-        typeof self.data[self.listDatesCounties[posIniTemp]]['estados'][
-          stateParam
-        ] !== 'undefined'
-      ) {
-        // tslint:disable-next-line:forin
-        for (const county in self.data[self.listDatesCounties[posIniTemp]][
-          'estados'
-        ][stateParam]['municipios']) {
-          if (-1 === ibgeList.indexOf(county)) {
-            ibgeList.push(county);
-          }
-        }
-      }
-      posIniTemp = posIniTemp + 1;
-    }
-
-    const promises = [
-      new Promise(resolve => {
-        self.lineChartCounties = [];
-
-        // for (const county in ibgeList) {
-        // ibgeList.forEach(function(county, index) {
-        self.rankingCounties.forEach(function(rankingElm, index) {
-          if (index > 9 && countyParam === '') {
-            return;
-          }
-          const county = rankingElm.ibge;
-          if (countyParam !== '' && county !== countyParam) {
-            return;
-          }
-
-          let posIni = self.listDatesCounties.indexOf(iniDate);
-          const points = [];
-          while (self.listDatesCounties[posIni] <= endDate) {
-            let value =
-              typeof self.data[self.listDatesCounties[posIni]] === 'undefined'
-                ? 0
-                : self.data[self.listDatesCounties[posIni]].total;
-            if (value !== 0) {
-              value =
-                typeof self.data[self.listDatesCounties[posIni]]['estados'][
-                  stateParam
-                ] === 'undefined'
-                  ? 0
-                  : self.data[self.listDatesCounties[posIni]]['estados'][
-                      stateParam
-                    ].total;
-            }
-            if (value !== 0) {
-              value =
-                typeof self.data[self.listDatesCounties[posIni]]['estados'][
-                  stateParam
-                ]['municipios'][county] === 'undefined'
-                  ? 0
-                  : self.data[self.listDatesCounties[posIni]]['estados'][
-                      stateParam
-                    ]['municipios'][county].total;
-            }
-            minY = Math.min(minY, value);
-            maxY = Math.max(maxY, value);
-            if (value !== 0) {
-              points.push({
-                date: parseDate(self.listDatesCounties[posIni]),
-                value: value,
-                region: county
-              });
-            }
-            posIni = posIni + 1;
-          }
-          countiesList.push(county);
-          self.lineChartCounties.push({ region: county, datapoints: points });
-        });
-        resolve(true);
-      })
-    ];
-
-    Promise.all(promises).then(ready);
-
-    function ready([dataPoints]) {
-      const posIni =
-        self.listDatesCounties.indexOf(iniDate) === -1
-          ? 0
-          : self.listDatesCounties.indexOf(iniDate);
-      const posEnd =
-        self.listDatesCounties.indexOf(endDate) === -1
-          ? self.listDatesCounties.length - 1
-          : self.listDatesCounties.indexOf(endDate);
-      xScale.domain(
-        d3.extent(self.listDatesCounties.slice(posIni, posEnd + 1), function(
-          d
-        ) {
-          return parseDate(d);
-        })
-      );
-      yScale.domain([minY - 2, maxY + 30]);
-
-      // Place the axes on the chart
-      g.append('g')
-        .attr('class', 'x axis')
-        .attr('transform', 'translate(0,' + height + ')')
-        .call(xAxis);
-
-      g.append('g')
-        .attr('class', 'y axis')
-        .call(yAxis)
-        .append('text')
-        .attr('class', 'label')
-        .attr('y', 6)
-        .style('text-anchor', 'beginning')
-        .attr('transform', 'rotate(-90)')
-        .text('Cases');
-
-      const title =
-        countyParam === ''
-          ? 'Casos Confirmados casos por município (' + stateParam + ')'
-          : typeof self.countiesNames[countyParam] === 'undefined'
-          ? 'IBGE: ' + countyParam
-          : self.countiesNames[countyParam];
-
-      g.append('text')
-        .attr('x', width / 3.5)
-        .attr('y', 5)
-        .attr('fill', '#aaaaaa')
-        .attr('font-family', 'sans-serif')
-        .style('font-size', 'calc(2vh)')
-        .style('font-weight', 'bold')
-        .text(title);
-
-      const cases = g
-        .selectAll('.category')
-        .data(self.lineChartCounties)
-        .enter()
-        .append('g')
-        .attr('class', 'category');
-
-      cases
-        .append('path')
-        .attr('class', 'line')
-        .attr('d', function(d) {
-          return line(d.datapoints);
-        })
-        .attr('fill', 'none')
-        .style('stroke', function(d) {
-          return self.coloresGoogle(countiesList.indexOf(d.region));
-        });
-      cases
-        .selectAll('.series')
-        .data(function(d) {
-          return d.datapoints;
-        })
-        .enter()
-        .append('circle')
-        .attr('class', 'dot')
-        .attr('cx', function(d) {
-          return xScale(d.date);
-        })
-        .attr('cy', function(d) {
-          return yScale(d.value);
-        })
-        .attr('stroke', function(d) {
-          return self.coloresGoogle(countiesList.indexOf(d.region));
-        })
-        .attr('fill', function(d) {
-          return self.coloresGoogle(countiesList.indexOf(d.region));
-        })
-        .attr('r', 2)
-        .on('mouseover', self.tipLineCounty.show)
-        .on('mouseout', self.tipLineCounty.hide);
-    }
-
-    self.tipLineCounty = d3Tip();
-    self.tipLineCounty
-      .attr('class', 'd3-tip')
-      .offset([20, -80])
-      .html(function(d) {
-        return (
-          '<div style="opacity:0.8;background-color:' +
-          d3.select(this).attr('fill') +
-          ';padding:7px;color:white">' +
-          '<text style="font-weight: 800">' +
-          self.countiesNames[d.region] +
-          '</text></br><text>' +
-          d3.timeFormat('%d/%m')(d.date) +
-          ':</text> <text style="font-weight: 800">' +
-          self.formatThousandsSeperator(d.value) +
-          '</text>' +
-          '</div>'
-        );
-      });
-    g.call(self.tipLineCounty);
-  };*/
-  loadCountiesLineChart = (stateParam, iniDate, endDate, byDeaths = false) => {
+  loadCountiesLineChart = (stateParam, iniDate, endDate, byDeaths = false, byDensidade = false) => {
     const self = this;
     let container = d3.select('#svg-linechart-county').node() as any;
     if ( container === (undefined || null) || container.parentNode === (undefined || null) ) {
@@ -1792,9 +1389,14 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       new Promise(resolve => {
         self.lineChartCounties = [];
 
+        let population = self.popScale;
+
         self.rankingCounties.forEach(function(rankingElm, index) {
           const county = rankingElm.ibge;
-
+          if (byDensidade === true) {
+              population = typeof self.population[stateParam]['municipios'][county] === 'undefined' ? 1000000 :
+                  self.population[stateParam]['municipios'][county];
+          }
           let posIni = self.listDatesCounties.indexOf(iniDate);
           while (self.listDatesCounties[posIni] <= endDate) {
             let value = 0;
@@ -1818,6 +1420,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
               }
             }
             if (value !== 0) {
+              value = value * (self.popScale / population);
               self.lineChartCounties.push({ date: parseDate(self.listDatesCounties[posIni]),
                 value: value,
                 region: county
@@ -1843,9 +1446,18 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
     function ready([dataPoints]) {
       let legendRange = [0, 5, 10, 20, 50, 100, 200, 500, 1000];
+
       if (byDeaths === true) {
         legendRange = [0, 1, 2, 5, 10, 25, 50, 75, 100];
+        if (byDensidade === true) {
+          legendRange = [0, 0.25, 0.5, 0.75, 1, 5, 10, 25, 50];
+        }
+      } else {
+        if (byDensidade === true) {
+          legendRange = [0, 0.5, 1, 2, 5, 10, 20, 25, 50];
+        }
       }
+
       const colorRange = self.getPlasmaList(9);
       const qtyDays = 1 + self.listDatesStates.indexOf(self.endSelectedDay) - self.listDatesStates.indexOf(self.iniSelectedDay);
       const gridSizeX = width / qtyDays;
@@ -1961,7 +1573,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           .attr('transform', 'translate(' + scrollG.node().getBoundingClientRect().width + ',0)');
 
       const absoluteContentHeight = heatMapG.node().getBoundingClientRect().height;
-      const scrollbarHeight =
+      const scrollbarHeight = absoluteContentHeight === 0 ? 0 :
           scrollG.node().getBoundingClientRect().height * scrollG.node().getBoundingClientRect().height / absoluteContentHeight;
       scrollBar.attr('height', scrollbarHeight);
 
@@ -2026,7 +1638,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
               '</text></br><text>' +
               d3.timeFormat('%d/%m')(d.date) +
               ':</text> <text style="font-weight: 800">' +
-              self.formatThousandsSeperator(d.value) +
+              self.formatValueSeperator(d.value) +
               '</text>' +
               '</div>'
           );
