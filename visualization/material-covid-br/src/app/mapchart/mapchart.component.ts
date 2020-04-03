@@ -49,7 +49,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
     PI: [], PR: [], RJ: [], RN: [], RO: [], RR: [], RS: [], SC: [], SE: [], SP: [], TO: []
   };
 
-  yFormat = d3.format('.2s');
+  yFormat = d3.format(',d');
 
   statesNames = {
     AC: 'Acre', AL: 'Alagoas', AM: 'Amazonas', AP: 'Amapá', BA: 'Bahia', CE: 'Ceará', DF: 'Distrito Federal', ES: 'Espírito Santo',
@@ -281,6 +281,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
     const self = this;
     const parseDate = d3.timeParse('%Y-%m-%d');
     const formatTime = d3.timeFormat('%Y-%m-%d');
+    const formatTimeFront = d3.timeFormat('%d/%m/%Y');
     const iniDate = new Date(parseDate(self.minSelectedDay)).valueOf();
     const endDate = new Date(parseDate(self.maxSelectedDay)).valueOf();
 
@@ -389,10 +390,10 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       });
 
       d3.select('#label-date-ini').html(
-        '<text style="font-weight: 800; font-size: min(2.1vh, 2.1vw);">' + formatTime(d1[0]) + '</text>'
+        '<text style="font-weight: 800; font-size: min(2.1vh, 2.1vw);">' + formatTimeFront(d1[0]) + '</text>'
       );
       d3.select('#label-date-end').html(
-        '<text style="font-weight: 800; font-size: min(2.1vh, 2.1vw);">' + formatTime(d1[1]) + '</text>'
+        '<text style="font-weight: 800; font-size: min(2.1vh, 2.1vw);">' + formatTimeFront(d1[1]) + '</text>'
       );
     }
 
@@ -413,10 +414,10 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       }
 
       d3.select('#label-date-ini').html(
-        '<text style="font-weight: 800; font-size: min(2.1vh, 2.1vw);">' + formatTime(d1[0]) + '</text>'
+        '<text style="font-weight: 800; font-size: min(2.1vh, 2.1vw);">' + formatTimeFront(d1[0]) + '</text>'
       );
       d3.select('#label-date-end').html(
-        '<text style="font-weight: 800; font-size: min(2.1vh, 2.1vw);">' + formatTime(d1[1]) + '</text>'
+        '<text style="font-weight: 800; font-size: min(2.1vh, 2.1vw);">' + formatTimeFront(d1[1]) + '</text>'
       );
       d3.select(this)
         .transition()
@@ -644,7 +645,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           self.selectedState = d.properties.UF_05;
             self.loadWidgetState(self.selectedState, byDeaths, byDensidade);
           d3.select(this)
-              .attr('stroke', '#ED881A')
+              .attr('stroke', '#007acc')
               .attr('stroke-width', 6)
               .attr('selected', 'true');
 
@@ -657,7 +658,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       d3.selectAll('#country-g-map path').each(function(d) {
         if (d.properties.UF_05 === self.selectedState) {
           d3.select(this)
-              .attr('stroke', '#ED881A')
+              .attr('stroke', '#007acc')
               .attr('stroke-width', 6)
               .attr('selected', 'true');
         }
@@ -772,13 +773,13 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
               return '';
             }
             if (i === 0) {
-              return '≤' + d3.format('.2s')(y - 1) + '';
+              return '≤' + d3.format(',d')(y - 1) + '';
             }
             if (i === 8) {
-              return '≥' + d3.format('.2s')(lastTick) + '';
+              return '≥' + d3.format(',d')(lastTick) + '';
             }
             lastTick = y;
-            return d3.format('.2s')(y - 1) + '';
+            return d3.format(',d')(y - 1) + '';
           })
           .tickValues(color.domain())
       )
@@ -1092,13 +1093,13 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
               return '';
             }
             if (i === 0) {
-              return '≤' + d3.format('.2s')(y - 1) + '';
+              return '≤' + d3.format(',d')(y - 1) + '';
             }
             if (i === 8) {
-              return '≥' + d3.format('.2s')(lastTick) + '';
+              return '≥' + d3.format(',d')(lastTick) + '';
             }
             lastTick = y;
-            return d3.format('.2s')(y - 1) + '';
+            return d3.format(',d')(y - 1) + '';
           })
           .tickValues(color.domain())
       )
@@ -1399,7 +1400,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
               '<text style="font-weight: 800">' +
               self.statesNames[d.region] +
               '</text></br><text>' +
-              d3.timeFormat('%d/%m/%y')(d.date) +
+              d3.timeFormat('%d/%m/%Y')(d.date) +
               ':</text> <text style="font-weight: 800">' +
               self.formatValueSeperator(d.value) +
               '</text>' +
@@ -1699,7 +1700,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
               '<text style="font-weight: 800">' +
               self.countiesNames[d.region] +
               '</text></br><text>' +
-              d3.timeFormat('%d/%m/%y')(d.date) +
+              d3.timeFormat('%d/%m/%Y')(d.date) +
               ':</text> <text style="font-weight: 800">' +
               self.formatValueSeperator(d.value) +
               '</text>' +
