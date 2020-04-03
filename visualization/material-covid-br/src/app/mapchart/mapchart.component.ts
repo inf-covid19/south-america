@@ -742,13 +742,13 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
               return '';
             }
             if (i === 0) {
-              return '≤' + self.formatValueSeperator(y - 1) + '';
+              return '≤' + d3.format('.2s')(y - 1) + '';
             }
             if (i === 8) {
-              return '≥' + self.formatValueSeperator(lastTick) + '';
+              return '≥' + d3.format('.2s')(lastTick) + '';
             }
             lastTick = y;
-            return self.formatValueSeperator(y - 1) + '';
+            return d3.format('.2s')(y - 1) + '';
           })
           .tickValues(color.domain())
       )
@@ -758,6 +758,12 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
     // @ts-ignore
     d3.select('#total-country').html( self.formatValueSeperator(self.totalCountry) );
     d3.select('#total-country-deaths').html( self.formatValueSeperator(self.totalDeathCountry) );
+
+    if (byDensidade === true) {
+      d3.select('#name-total-country').html('Densidade Brasil');
+    } else {
+      d3.select('#name-total-country').html('Confirmados Brasil');
+    }
 
     const statesRankingElmnt = d3.select('#states-ranking');
     statesRankingElmnt.selectAll('*').remove();
@@ -1056,13 +1062,13 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
               return '';
             }
             if (i === 0) {
-              return '≤' + (y - 1) + '';
+              return '≤' + d3.format('.2s')(y - 1) + '';
             }
             if (i === 8) {
-              return '≥' + lastTick + '';
+              return '≥' + d3.format('.2s')(lastTick) + '';
             }
             lastTick = y;
-            return y - 1 + '';
+            return d3.format('.2s')(y - 1) + '';
           })
           .tickValues(color.domain())
       )
@@ -1073,8 +1079,12 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
     d3.select('#total-state').html(self.formatValueSeperator(self.totalState));
     d3.select('#total-state-deaths').html(self.formatValueSeperator(self.totalDeathState));
+    if (byDensidade === true) {
+      d3.select('#name-total-state').html('Densidade ' + self.selectedState);
+    } else {
+      d3.select('#name-total-state').html('Confirmados ' + self.selectedState);
+    }
 
-    d3.select('#name-total-state').html('Confirmados ' + self.selectedState);
 
     const countiesRankingElmnt = d3.select('#counties-ranking');
     countiesRankingElmnt.selectAll('*').remove();
@@ -1190,6 +1200,10 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       const x = d3.axisBottom().tickFormat(d3.timeFormat('%d/%m')).scale(d3.scaleTime()
               .domain([d3.timeParse('%Y-%m-%d')(self.iniSelectedDay), d3.timeParse('%Y-%m-%d')(self.endSelectedDay)])
               .range([0, gridSizeX * (qtyDays - 0.9)]));
+      let titleLabel = 'Casos confirmados ';
+      if (byDensidade === true) {
+        titleLabel = 'Densidade ';
+      }
       svg.append('text')
           .attr('x', width / 3.5)
           .attr('y', margin.top)
@@ -1197,7 +1211,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           .attr('font-family', 'sans-serif')
           .style('font-size', 'calc(2vh)')
           .style('font-weight', 'bold')
-          .text('Casos Confirmados por estado');
+          .text(titleLabel + ' por estado');
 
       g.append('g')
           .attr('class', 'x-axis')
@@ -1481,6 +1495,10 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       const x = d3.axisBottom().tickFormat(d3.timeFormat('%d/%m')).scale(d3.scaleTime()
           .domain([d3.timeParse('%Y-%m-%d')(self.iniSelectedDay), d3.timeParse('%Y-%m-%d')(self.endSelectedDay)])
           .range([0, gridSizeX * (qtyDays - 0.9)]));
+      let titleLabel = 'Casos confirmados ';
+      if (byDensidade === true) {
+        titleLabel = 'Densidade ';
+      }
       svg.append('text')
           .attr('x', width / 3.5)
           .attr('y', margin.top)
@@ -1488,7 +1506,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
           .attr('font-family', 'sans-serif')
           .style('font-size', 'calc(2vh)')
           .style('font-weight', 'bold')
-          .text('Casos Confirmados por município');
+          .text(titleLabel + 'por município no ' + self.selectedState);
 
       g.append('g')
           .attr('class', 'x-axis')
@@ -1528,7 +1546,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
       const dayLabels = scrollGDiv.selectAll('.dayLabel')
           .data(countiesList)
           .enter().append('text')
-          .text(function (d) { return d; })
+          .text(function (d) { return self.countiesNames[d].slice(0,8); })
           .on('mouseover', self.tipLineCountyName.show)
           .on('mouseout', self.tipLineCountyName.hide)
           .attr('x', 45)
