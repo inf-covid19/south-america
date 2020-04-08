@@ -139,8 +139,7 @@ dmypy.json
 #visualization angular
 ######################
 # dependencies
-/visualization/material-covid-br/node_modules
-/visualization/material-covid-br/.idea
-/visualization/material-covid-br/src/assets/csv
-/visualization/material-covid-br/src/assets/csv/cases-brazil-cities-ibge.csv
-/visualization/material-covid-br/src/assets/csv/cases-brazil-states.csv
+node_modules/
+src/assets/csv
+src/assets/csv/cases-brazil-cities-ibge.csv
+src/assets/csv/cases-brazil-states.csv
