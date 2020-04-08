@@ -44,7 +44,18 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 	];
 
 	statesByCountry = {
-		argentina: [], bolivia: [], brazil: [], chile: [], colombia: [], ecuador: [], guyana: [], paraguay: [], peru: [], suriname: [], uruguay: [], venezuela: []
+		argentina: [],
+		bolivia: [],
+		brazil: ['ac', 'al', 'ap', 'am', 'ba', 'ce', 'df', 'es', 'go', 'ma', 'mt', 'ms', 'mg', 'pa', 'pb', 'pr', 'pe', 'pi', 'rj', 'rn', 'rs', 'ro', 'rr', 'sc', 'sp', 'se', 'to'],
+		chile: [],
+		colombia: [],
+		ecuador: [],
+		guyana: [],
+		paraguay: [],
+		peru: [],
+		suriname: [],
+		uruguay: [],
+		venezuela: []
 	};
 
 	yFormat = d3.format(',d');
@@ -56,7 +67,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 	countriesParam = {
 		argentina: {haveStatesData: false},
 		bolivia: {haveStatesData: false},
-		brazil: {haveStatesData: true, flagState: 'state', confirmed: 'confirmed', deaths: 'deaths', population: 'estimated_population_2019'},
+		brazil: {haveStatesData: true, date: 'date', dateFormat: '%Y-%m-%d', columnFilter: 'place_type', valueFilter: 'state', cases: 'confirmed', deaths: 'deaths', population: 'estimated_population_2019'},
 		chile: {haveStatesData: false},
 		colombia: {haveStatesData: false},
 		ecuador: {haveStatesData: false},
@@ -135,70 +146,106 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 			});
 		});
 
-		let dataPromises = Object.keys(this.countriesNames).map(element => {
-			if (countriesParam[element.toLowerCase()].haveStatesData) {
+		let dataPromises = [];
+		Object.keys(this.countriesNames).map(element => {
+			if (self.countriesParam[element.toLowerCase()].haveStatesData) {
+				for (let element2 of self.statesByCountry[element.toLowerCase()]) {
+					dataPromises.push(d3.dsv(
+						',',
+						`https://raw.githubusercontent.com/inf-covid19/data/master/data/${element.toLowerCase()}/${element2.toLowerCase()}.csv`,
+						function(d) {
+							let parseDate = d3.timeParse(self.countriesParam[element.toLowerCase()].dateFormat)
+							let dateDate = parseDate(d[self.countriesParam[element.toLowerCase()].date])
+							let date = fns.format(dateDate, 'dd/MM/yyyy')
+							let columnFilter = d[self.countriesParam[element.toLowerCase()].columnFilter]
+							let valueFilter = self.countriesParam[element.toLowerCase()].valueFilter
+							let cases = parseInt(d[self.countriesParam[element.toLowerCase()].cases])
+							let deaths = parseInt(d[self.countriesParam[element.toLowerCase()].deaths])
+							let population = parseInt(d[self.countriesParam[element.toLowerCase()].population])
+
+							cases = isNaN(cases) ? 0 : cases
+							deaths = isNaN(deaths) ? 0 : deaths
+
+							if (columnFilter === valueFilter) {
+								if (self.listDatesCountries.indexOf(date) === -1 && !(cases === 0 && deaths === 0)) {
+									self.listDatesCountries.push(date);
+								}
+
+								if (-1 === self.listDatesStates.indexOf(date) && !(cases === 0 && deaths === 0)) {
+									self.listDatesStates.push(date);
+								}
+
+								self.data[date]['total'] += cases;
+								self.data[date]['total_death'] += deaths;
+								self.data[date]['countries'][element.toLowerCase()]['total'] += cases;
+								self.data[date]['countries'][element.toLowerCase()]['total_death'] += deaths;
+
+								if (element2.toLowerCase() in self.data[date]['countries'][element.toLowerCase()]['states'] === false) {
+									self.data[date]['countries'][element.toLowerCase()]['states'][element2.toLowerCase()] = {
+										total: 0,
+										total_death: 0
+									}
+								}
+
+								self.data[date]['countries'][element.toLowerCase()]['states'][element2.toLowerCase()]['total'] += cases;
+								self.data[date]['countries'][element.toLowerCase()]['states'][element2.toLowerCase()]['total_death'] += deaths;
+
+								self.statesNames[element2.toLowerCase()] = element2.toUpperCase();
+
+								if (element2.toLowerCase() in self.population[element.toLowerCase()]['states'] === false) {
+									self.population[element.toLowerCase()]['states'][element2.toLowerCase()] = 0
+								}
+
+								if (self.population[element.toLowerCase()]['states'][element2.toLowerCase()] === 0) {
+									self.population.total += population
+									self.population[element.toLowerCase()].population += population
+									self.population[element.toLowerCase()]['states'][element2.toLowerCase()] = population
+								}
+								else if (self.population[element.toLowerCase()]['states'][element2.toLowerCase()] <= population) {
+									self.population.total += population - self.population[element.toLowerCase()]['states'][element2.toLowerCase()]
+									self.population[element.toLowerCase()].population += population - self.population[element.toLowerCase()]['states'][element2.toLowerCase()]
+									self.population[element.toLowerCase()]['states'][element2.toLowerCase()] = population
+								}
+							}
+						}
+					));
+				}
 			}
 			else {
-				return d3.dsv(
+				dataPromises.push(d3.dsv(
 					',',
 					`https://raw.githubusercontent.com/inf-covid19/data/master/data/countries/${element.toLowerCase()}.csv`,
 					function(d) {
-						// Filling states data
-						if (self.listDatesCountries.indexOf(d.dateRep) === -1 && !(parseInt(d.cases) === 0 && parseInt(d.deaths) === 0)) {
-							self.listDatesCountries.push(d.dateRep);
+						let date = d.dateRep
+						let cases = isNaN(parseInt(d.cases)) ? 0 : parseInt(d.cases)
+						let deaths = isNaN(parseInt(d.deaths)) ? 0 : parseInt(d.deaths)
+						let population = parseInt(d.popData2018)
+						
+						if (self.listDatesCountries.indexOf(date) === -1 && !(cases === 0 && deaths === 0)) {
+							self.listDatesCountries.push(date);
 						}
-						// if (d.place_type === 'state') {
-						self.data[d.dateRep]['total'] += parseInt(d.cases);
-						// self.data[d.date]['total_death'] += d.deaths === '' ? 0 : parseInt(d.deaths);
-						// self.data[d.dateRep]['total_death'] = 0;
-						self.data[d.dateRep]['total_death'] += parseInt(d.deaths);
-						self.data[d.dateRep]['countries'][element.toLowerCase()]['total'] = parseInt(d.cases);
-						self.data[d.dateRep]['countries'][element.toLowerCase()]['total_death'] = d.deaths === '' ? 0 : parseInt(d.deaths);
+
+						if (-1 === self.listDatesStates.indexOf(date) && !(cases === 0 && deaths === 0)) {
+							self.listDatesStates.push(date);
+						}
+						
+						self.data[date]['total'] += cases;
+						self.data[date]['total_death'] += deaths;
+						self.data[date]['countries'][element.toLowerCase()]['total'] += cases;
+						self.data[date]['countries'][element.toLowerCase()]['total_death'] += deaths;
 
 						if (self.population[element.toLowerCase()].population === 0) {
-							self.population.total += parseInt(d.popData2018);
-							self.population[element.toLowerCase()].population = parseInt(d.popData2018);
+							self.population.total += population;
+							self.population[element.toLowerCase()].population = population;
 						}
-						// }
-						// Filling cities data
-						// else if (d.place_type === 'city') {
-						/*let munId = d.city_ibge_code;
-				if (munId === '') {
-				  munId = d.city;
-				}
-				if (
-				  munId in self.data[d.date]['countries'][d.state]['states'] ===
-				  false
-				) {
-				  self.data[d.date]['countries'][d.state]['states'][munId] = {
-					 total: 0,
-					 total_death: 0
-				  };
-				}
-				if (-1 === self.statesByCountry[d.state].indexOf(munId)) {
-				  self.statesByCountry[d.state].push(munId);
-				}
-				self.data[d.date]['countries'][d.state]['states'][munId]['total'] += parseInt(d.confirmed);
-				self.data[d.date]['countries'][d.state]['states'][munId]['total_death'] = d.deaths === '' ? 0 : parseInt(d.deaths);
-				self.statesNames[munId] = d.city.split('/')[0];*/
-						if (-1 === self.listDatesStates.indexOf(d.dateRep) && !(parseInt(d.cases) === 0 && parseInt(d.deaths) === 0)) {
-							self.listDatesStates.push(d.dateRep);
+						else if (self.population[element.toLowerCase()].population <= population) {
+							self.population.total += population - self.population[element.toLowerCase()].population;
+							self.population[element.toLowerCase()].population = population;
 						}
-						//}
 					}
+				));
 			}
-				);
 		});
-
-		/*dataPromises.push(
-		  d3.dsv( ',', './assets/csv/population.csv',
-				function(d) {
-				  self.population.total += parseInt(d.population);
-				  self.population[d.state].population += parseInt(d.population);
-				  self.population[d.state]['states'][d.cod_ibge] = parseInt(d.population);
-				}
-		  )
-	 );*/
 
 		Promise.all(dataPromises).then(values => {
 			dateSerie.slice(1).forEach((d, i) => {
@@ -209,38 +256,54 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 				self.data[date].total_death = 0;
 
 				Object.keys(self.data[date]['countries']).forEach(element => {
-					// if (self.data[date]['countries'][element].total === 0) {
-					const lastValue1 = self.data[lastDate]['countries'][element].total;
-					self.data[date]['countries'][element].total += lastValue1;
-					// }
-					self.data[date].total += self.data[date]['countries'][element].total;
-
-					// if (self.data[date]['countries'][element].total_death === 0) {
-					const lastValue2 = self.data[lastDate]['countries'][element].total_death;
-					self.data[date]['countries'][element].total_death += lastValue2;
-					// }
-					self.data[date].total_death += self.data[date]['countries'][element].total_death;
-
-					Object.keys(self.data[lastDate]['countries'][element]['states']).forEach(
-						state => {
-							if ( state in self.data[date]['countries'][element]['states'] === false ||
-								(state in self.data[date]['countries'][element]['states'] === true
-									&& self.data[date]['countries'][element]['states'][state].total === 0
-									&& self.data[date]['countries'][element]['states'][state].total < self.data[lastDate]['countries'][element]['states'][state].total)) {
-								const lastValue = self.data[lastDate]['countries'][element]['states'][state];
-								self.data[date]['countries'][element]['states'][state] = {
-									...lastValue
-								};
-							}
-							if ( state in self.data[date]['countries'][element]['states'] === false ||
-								(state in self.data[date]['countries'][element]['states'] === true
-									&& self.data[date]['countries'][element]['states'][state].total_death === 0
-									&& self.data[date]['countries'][element]['states'][state].total_death < self.data[lastDate]['countries'][state]['states'][state].total_death)) {
-								const lastValue = self.data[lastDate]['countries'][element]['states'][state];
-								self.data[date]['countries'][element]['states'][state].total_death = lastValue.total_death;
-							}
+					if (self.countriesParam[element.toLowerCase()].haveStatesData) {
+						if (self.data[date]['countries'][element].total === 0) {
+							const lastValue1 = self.data[lastDate]['countries'][element].total;
+							self.data[date]['countries'][element].total = lastValue1;
 						}
-					);
+
+						if (self.data[date]['countries'][element].total_death === 0) {
+							const lastValue2 = self.data[lastDate]['countries'][element].total_death;
+							self.data[date]['countries'][element].total_death = lastValue2;
+						}
+						Object.keys(self.data[lastDate]['countries'][element]['states']).forEach(
+							state => {
+								if ( state in self.data[date]['countries'][element]['states'] === false ||
+									(state in self.data[date]['countries'][element]['states'] === true
+										&& self.data[date]['countries'][element]['states'][state].total < self.data[lastDate]['countries'][element]['states'][state].total)) {
+									const lastValue = self.data[lastDate]['countries'][element]['states'][state];
+									self.data[date]['countries'][element]['states'][state] = {
+										...lastValue
+									};
+								}
+								if ( state in self.data[date]['countries'][element]['states'] === false ||
+									(state in self.data[date]['countries'][element]['states'] === true
+										&& self.data[date]['countries'][element]['states'][state].total_death < self.data[lastDate]['countries'][element]['states'][state].total_death)) {
+									const lastValue = self.data[lastDate]['countries'][element]['states'][state];
+									self.data[date]['countries'][element]['states'][state].total_death = lastValue.total_death;
+								}
+							}
+						);
+						let totalCountry = 0, totalCountryDeaths = 0;
+						Object.keys(self.data[date]['countries'][element]['states']).forEach(state => {
+							totalCountryDeaths += self.data[date]['countries'][element]['states'][state].total_death;
+							totalCountry += self.data[date]['countries'][element]['states'][state].total;
+						});
+						self.data[date]['countries'][element].total = totalCountry;
+						self.data[date]['countries'][element].total_death = totalCountryDeaths;
+						self.data[date].total += totalCountry;
+						self.data[date].total_death += totalCountryDeaths;
+
+					}
+					else {
+						const lastValue1 = self.data[lastDate]['countries'][element].total;
+						self.data[date]['countries'][element].total += lastValue1;
+						self.data[date].total += self.data[date]['countries'][element].total;
+
+						const lastValue2 = self.data[lastDate]['countries'][element].total_death;
+						self.data[date]['countries'][element].total_death += lastValue2;
+						self.data[date].total_death += self.data[date]['countries'][element].total_death;
+					}
 				});
 			});
 
@@ -994,9 +1057,9 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 				.attr('fill', d => {
 					let stateColor = 0;
 					if (byDeaths === true) {
-						stateColor = typeof TotalDeathReport.get(d.properties.code) === 'undefined' ? 0 : TotalDeathReport.get(d.properties.code);
+						stateColor = typeof TotalDeathReport.get(d.properties.code.toLowerCase()) === 'undefined' ? 0 : TotalDeathReport.get(d.properties.code.toLowerCase());
 					} else {
-						stateColor = typeof TotalReport.get(d.properties.code) === 'undefined' ? 0 : TotalReport.get(d.properties.code);
+						stateColor = typeof TotalReport.get(d.properties.code.toLowerCase()) === 'undefined' ? 0 : TotalReport.get(d.properties.code.toLowerCase());
 					}
 
 					if (stateColor === 0) {
@@ -1034,17 +1097,17 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 					d.properties.name +
 					'</text><br/>' +
 					'<text>' + labelTot + ': </text><text style="font-weight: 800">' +
-					(typeof TotalReport.get(d.properties.code) === 'undefined'
+					(typeof TotalReport.get(d.properties.code.toLowerCase()) === 'undefined'
 						? 0
-						: self.formatValueSeperator(TotalReport.get(d.properties.code))) +
+						: self.formatValueSeperator(TotalReport.get(d.properties.code.toLowerCase()))) +
 					'</text><br/>' +
 					'<text>' + labelTotDeath + ': </text><text style="font-weight: 800">' +
-					(typeof TotalDeathReport.get(d.properties.code) === 'undefined'
+					(typeof TotalDeathReport.get(d.properties.code.toLowerCase()) === 'undefined'
 						? 0
-						: self.formatValueSeperator(TotalDeathReport.get(d.properties.code))) +
+						: self.formatValueSeperator(TotalDeathReport.get(d.properties.code.toLowerCase()))) +
 					'</text><br/>' +
 					'<text>Población: </text><text style="font-weight: 800">' +
-					d3.format(',d')(self.population[param]['states'][d.properties.code]) +
+					d3.format(',d')(self.population[param]['states'][d.properties.code.toLowerCase()]) +
 					'</text><br/>' +
 					'</div>'
 				);
@@ -1447,7 +1510,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 
 	loadStatesLineChart = (param, iniDate, endDate, byDeaths = false, byDensidade = false) => {
 		const self = this;
-		let container = d3.select('#svg-linechart-states').node() as any;
+		let container = d3.select('#svg-linechart-state').node() as any;
 		if ( container === (undefined || null) || container.parentNode === (undefined || null) ) {
 			return;
 		}
@@ -1461,7 +1524,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 		// Define scales
 		const xScale = d3.scaleTime().range([0, width]);
 
-		d3.select('#svg-linechart-states').selectAll('*').remove();
+		d3.select('#svg-linechart-state').selectAll('*').remove();
 
 		const statesList = [];
 		const ibgeList = [];
@@ -1532,9 +1595,9 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 			})
 		];
 		Promise.all(promises).then(ready);
-		d3.select('#svg-linechart-states').selectAll('*').remove();
+		d3.select('#svg-linechart-state').selectAll('*').remove();
 
-		const svg = d3.select('#svg-linechart-states')
+		const svg = d3.select('#svg-linechart-state')
 			.attr('x', 0)
 			.attr('y', margin.top * 1.5)
 			.attr('width', width + margin.left + margin.right)
