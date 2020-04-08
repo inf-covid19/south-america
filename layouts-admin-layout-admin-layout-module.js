@@ -64248,11 +64248,36 @@ var MapchartComponent = /** @class */ (function () {
             500000000000
         ];
         this.statesByCountry = {
-            argentina: [], bolivia: [], brazil: [], chile: [], colombia: [], ecuador: [], guyana: [], paraguay: [], peru: [], suriname: [], uruguay: [], venezuela: []
+            argentina: [],
+            bolivia: [],
+            brazil: ['ac', 'al', 'ap', 'am', 'ba', 'ce', 'df', 'es', 'go', 'ma', 'mt', 'ms', 'mg', 'pa', 'pb', 'pr', 'pe', 'pi', 'rj', 'rn', 'rs', 'ro', 'rr', 'sc', 'sp', 'se', 'to'],
+            chile: [],
+            colombia: [],
+            ecuador: [],
+            guyana: [],
+            paraguay: [],
+            peru: [],
+            suriname: [],
+            uruguay: [],
+            venezuela: []
         };
         this.yFormat = d3__WEBPACK_IMPORTED_MODULE_1__["format"](',d');
         this.countriesNames = {
             argentina: "Argentina", bolivia: "Bolivia", brazil: "Brasil", chile: "Chile", colombia: "Colombia", ecuador: "Ecuador", guyana: "Guyana", paraguay: "Paraguay", peru: "Perú", suriname: "Surinam", uruguay: "Uruguay", venezuela: "Venezuela"
+        };
+        this.countriesParam = {
+            argentina: { haveStatesData: false },
+            bolivia: { haveStatesData: false },
+            brazil: { haveStatesData: true, date: 'date', dateFormat: '%Y-%m-%d', columnFilter: 'place_type', valueFilter: 'state', cases: 'confirmed', deaths: 'deaths', population: 'estimated_population_2019' },
+            chile: { haveStatesData: false },
+            colombia: { haveStatesData: false },
+            ecuador: { haveStatesData: false },
+            guyana: { haveStatesData: false },
+            paraguay: { haveStatesData: false },
+            peru: { haveStatesData: false },
+            suriname: { haveStatesData: false },
+            uruguay: { haveStatesData: false },
+            venezuela: { haveStatesData: false }
         };
         this.statesNames = {};
         this.selectedCountry = 'brazil';
@@ -64867,10 +64892,10 @@ var MapchartComponent = /** @class */ (function () {
                     .attr('fill', function (d) {
                     var stateColor = 0;
                     if (byDeaths === true) {
-                        stateColor = typeof TotalDeathReport.get(d.properties.code) === 'undefined' ? 0 : TotalDeathReport.get(d.properties.code);
+                        stateColor = typeof TotalDeathReport.get(d.properties.code.toLowerCase()) === 'undefined' ? 0 : TotalDeathReport.get(d.properties.code.toLowerCase());
                     }
                     else {
-                        stateColor = typeof TotalReport.get(d.properties.code) === 'undefined' ? 0 : TotalReport.get(d.properties.code);
+                        stateColor = typeof TotalReport.get(d.properties.code.toLowerCase()) === 'undefined' ? 0 : TotalReport.get(d.properties.code.toLowerCase());
                     }
                     if (stateColor === 0) {
                         return '#000000';
@@ -64902,17 +64927,17 @@ var MapchartComponent = /** @class */ (function () {
                     d.properties.name +
                     '</text><br/>' +
                     '<text>' + labelTot + ': </text><text style="font-weight: 800">' +
-                    (typeof TotalReport.get(d.properties.code) === 'undefined'
+                    (typeof TotalReport.get(d.properties.code.toLowerCase()) === 'undefined'
                         ? 0
-                        : self.formatValueSeperator(TotalReport.get(d.properties.code))) +
+                        : self.formatValueSeperator(TotalReport.get(d.properties.code.toLowerCase()))) +
                     '</text><br/>' +
                     '<text>' + labelTotDeath + ': </text><text style="font-weight: 800">' +
-                    (typeof TotalDeathReport.get(d.properties.code) === 'undefined'
+                    (typeof TotalDeathReport.get(d.properties.code.toLowerCase()) === 'undefined'
                         ? 0
-                        : self.formatValueSeperator(TotalDeathReport.get(d.properties.code))) +
+                        : self.formatValueSeperator(TotalDeathReport.get(d.properties.code.toLowerCase()))) +
                     '</text><br/>' +
                     '<text>Población: </text><text style="font-weight: 800">' +
-                    d3__WEBPACK_IMPORTED_MODULE_1__["format"](',d')(self.population[param]['states'][d.properties.code]) +
+                    d3__WEBPACK_IMPORTED_MODULE_1__["format"](',d')(self.population[param]['states'][d.properties.code.toLowerCase()]) +
                     '</text><br/>' +
                     '</div>');
             });
@@ -65270,7 +65295,7 @@ var MapchartComponent = /** @class */ (function () {
             if (byDeaths === void 0) { byDeaths = false; }
             if (byDensidade === void 0) { byDensidade = false; }
             var self = _this;
-            var container = d3__WEBPACK_IMPORTED_MODULE_1__["select"]('#svg-linechart-states').node();
+            var container = d3__WEBPACK_IMPORTED_MODULE_1__["select"]('#svg-linechart-state').node();
             if (container === (undefined || null) || container.parentNode === (undefined || null)) {
                 return;
             }
@@ -65281,7 +65306,7 @@ var MapchartComponent = /** @class */ (function () {
             var parseDate = d3__WEBPACK_IMPORTED_MODULE_1__["timeParse"]('%d/%m/%Y');
             // Define scales
             var xScale = d3__WEBPACK_IMPORTED_MODULE_1__["scaleTime"]().range([0, width]);
-            d3__WEBPACK_IMPORTED_MODULE_1__["select"]('#svg-linechart-states').selectAll('*').remove();
+            d3__WEBPACK_IMPORTED_MODULE_1__["select"]('#svg-linechart-state').selectAll('*').remove();
             var statesList = [];
             var ibgeList = [];
             var posIniTemp = self.listDatesStates.indexOf(iniDate);
@@ -65350,8 +65375,8 @@ var MapchartComponent = /** @class */ (function () {
                 })
             ];
             Promise.all(promises).then(ready);
-            d3__WEBPACK_IMPORTED_MODULE_1__["select"]('#svg-linechart-states').selectAll('*').remove();
-            var svg = d3__WEBPACK_IMPORTED_MODULE_1__["select"]('#svg-linechart-states')
+            d3__WEBPACK_IMPORTED_MODULE_1__["select"]('#svg-linechart-state').selectAll('*').remove();
+            var svg = d3__WEBPACK_IMPORTED_MODULE_1__["select"]('#svg-linechart-state')
                 .attr('x', 0)
                 .attr('y', margin.top * 1.5)
                 .attr('width', width + margin.left + margin.right)
@@ -65594,60 +65619,89 @@ var MapchartComponent = /** @class */ (function () {
                 };
             });
         });
-        var dataPromises = Object.keys(this.countriesNames).map(function (element) {
-            return d3__WEBPACK_IMPORTED_MODULE_1__["dsv"](',', "https://raw.githubusercontent.com/inf-covid19/data/master/data/countries/" + element.toLowerCase() + ".csv", function (d) {
-                // Filling states data
-                if (self.listDatesCountries.indexOf(d.dateRep) === -1 && !(parseInt(d.cases) === 0 && parseInt(d.deaths) === 0)) {
-                    self.listDatesCountries.push(d.dateRep);
+        var dataPromises = [];
+        Object.keys(this.countriesNames).map(function (element) {
+            if (self.countriesParam[element.toLowerCase()].haveStatesData) {
+                var _loop_2 = function (element2) {
+                    dataPromises.push(d3__WEBPACK_IMPORTED_MODULE_1__["dsv"](',', "https://raw.githubusercontent.com/inf-covid19/data/master/data/" + element.toLowerCase() + "/" + element2.toLowerCase() + ".csv", function (d) {
+                        var parseDate = d3__WEBPACK_IMPORTED_MODULE_1__["timeParse"](self.countriesParam[element.toLowerCase()].dateFormat);
+                        var dateDate = parseDate(d[self.countriesParam[element.toLowerCase()].date]);
+                        var date = date_fns__WEBPACK_IMPORTED_MODULE_3__["format"](dateDate, 'dd/MM/yyyy');
+                        var columnFilter = d[self.countriesParam[element.toLowerCase()].columnFilter];
+                        var valueFilter = self.countriesParam[element.toLowerCase()].valueFilter;
+                        var cases = parseInt(d[self.countriesParam[element.toLowerCase()].cases]);
+                        var deaths = parseInt(d[self.countriesParam[element.toLowerCase()].deaths]);
+                        var population = parseInt(d[self.countriesParam[element.toLowerCase()].population]);
+                        cases = isNaN(cases) ? 0 : cases;
+                        deaths = isNaN(deaths) ? 0 : deaths;
+                        if (columnFilter === valueFilter) {
+                            if (self.listDatesCountries.indexOf(date) === -1 && !(cases === 0 && deaths === 0)) {
+                                self.listDatesCountries.push(date);
+                            }
+                            if (-1 === self.listDatesStates.indexOf(date) && !(cases === 0 && deaths === 0)) {
+                                self.listDatesStates.push(date);
+                            }
+                            self.data[date]['total'] += cases;
+                            self.data[date]['total_death'] += deaths;
+                            self.data[date]['countries'][element.toLowerCase()]['total'] += cases;
+                            self.data[date]['countries'][element.toLowerCase()]['total_death'] += deaths;
+                            if (element2.toLowerCase() in self.data[date]['countries'][element.toLowerCase()]['states'] === false) {
+                                self.data[date]['countries'][element.toLowerCase()]['states'][element2.toLowerCase()] = {
+                                    total: 0,
+                                    total_death: 0
+                                };
+                            }
+                            self.data[date]['countries'][element.toLowerCase()]['states'][element2.toLowerCase()]['total'] += cases;
+                            self.data[date]['countries'][element.toLowerCase()]['states'][element2.toLowerCase()]['total_death'] += deaths;
+                            self.statesNames[element2.toLowerCase()] = element2.toUpperCase();
+                            if (element2.toLowerCase() in self.population[element.toLowerCase()]['states'] === false) {
+                                self.population[element.toLowerCase()]['states'][element2.toLowerCase()] = 0;
+                            }
+                            if (self.population[element.toLowerCase()]['states'][element2.toLowerCase()] === 0) {
+                                self.population.total += population;
+                                self.population[element.toLowerCase()].population += population;
+                                self.population[element.toLowerCase()]['states'][element2.toLowerCase()] = population;
+                            }
+                            else if (self.population[element.toLowerCase()]['states'][element2.toLowerCase()] <= population) {
+                                self.population.total += population - self.population[element.toLowerCase()]['states'][element2.toLowerCase()];
+                                self.population[element.toLowerCase()].population += population - self.population[element.toLowerCase()]['states'][element2.toLowerCase()];
+                                self.population[element.toLowerCase()]['states'][element2.toLowerCase()] = population;
+                            }
+                        }
+                    }));
+                };
+                for (var _i = 0, _a = self.statesByCountry[element.toLowerCase()]; _i < _a.length; _i++) {
+                    var element2 = _a[_i];
+                    _loop_2(element2);
                 }
-                // if (d.place_type === 'state') {
-                self.data[d.dateRep]['total'] += parseInt(d.cases);
-                // self.data[d.date]['total_death'] += d.deaths === '' ? 0 : parseInt(d.deaths);
-                // self.data[d.dateRep]['total_death'] = 0;
-                self.data[d.dateRep]['total_death'] += parseInt(d.deaths);
-                self.data[d.dateRep]['countries'][element.toLowerCase()]['total'] = parseInt(d.cases);
-                self.data[d.dateRep]['countries'][element.toLowerCase()]['total_death'] = d.deaths === '' ? 0 : parseInt(d.deaths);
-                if (self.population[element.toLowerCase()].population === 0) {
-                    self.population.total += parseInt(d.popData2018);
-                    self.population[element.toLowerCase()].population = parseInt(d.popData2018);
-                }
-                // }
-                // Filling cities data
-                // else if (d.place_type === 'city') {
-                /*let munId = d.city_ibge_code;
-                if (munId === '') {
-                  munId = d.city;
-                }
-                if (
-                  munId in self.data[d.date]['countries'][d.state]['states'] ===
-                  false
-                ) {
-                  self.data[d.date]['countries'][d.state]['states'][munId] = {
-                    total: 0,
-                    total_death: 0
-                  };
-                }
-                if (-1 === self.statesByCountry[d.state].indexOf(munId)) {
-                  self.statesByCountry[d.state].push(munId);
-                }
-                self.data[d.date]['countries'][d.state]['states'][munId]['total'] += parseInt(d.confirmed);
-                self.data[d.date]['countries'][d.state]['states'][munId]['total_death'] = d.deaths === '' ? 0 : parseInt(d.deaths);
-                self.statesNames[munId] = d.city.split('/')[0];*/
-                if (-1 === self.listDatesStates.indexOf(d.dateRep) && !(parseInt(d.cases) === 0 && parseInt(d.deaths) === 0)) {
-                    self.listDatesStates.push(d.dateRep);
-                }
-                //}
-            });
+            }
+            else {
+                dataPromises.push(d3__WEBPACK_IMPORTED_MODULE_1__["dsv"](',', "https://raw.githubusercontent.com/inf-covid19/data/master/data/countries/" + element.toLowerCase() + ".csv", function (d) {
+                    var date = d.dateRep;
+                    var cases = isNaN(parseInt(d.cases)) ? 0 : parseInt(d.cases);
+                    var deaths = isNaN(parseInt(d.deaths)) ? 0 : parseInt(d.deaths);
+                    var population = parseInt(d.popData2018);
+                    if (self.listDatesCountries.indexOf(date) === -1 && !(cases === 0 && deaths === 0)) {
+                        self.listDatesCountries.push(date);
+                    }
+                    if (-1 === self.listDatesStates.indexOf(date) && !(cases === 0 && deaths === 0)) {
+                        self.listDatesStates.push(date);
+                    }
+                    self.data[date]['total'] += cases;
+                    self.data[date]['total_death'] += deaths;
+                    self.data[date]['countries'][element.toLowerCase()]['total'] += cases;
+                    self.data[date]['countries'][element.toLowerCase()]['total_death'] += deaths;
+                    if (self.population[element.toLowerCase()].population === 0) {
+                        self.population.total += population;
+                        self.population[element.toLowerCase()].population = population;
+                    }
+                    else if (self.population[element.toLowerCase()].population <= population) {
+                        self.population.total += population - self.population[element.toLowerCase()].population;
+                        self.population[element.toLowerCase()].population = population;
+                    }
+                }));
+            }
         });
-        /*dataPromises.push(
-            d3.dsv( ',', './assets/csv/population.csv',
-                function(d) {
-                  self.population.total += parseInt(d.population);
-                  self.population[d.state].population += parseInt(d.population);
-                  self.population[d.state]['states'][d.cod_ibge] = parseInt(d.population);
-                }
-            )
-        );*/
         Promise.all(dataPromises).then(function (values) {
             dateSerie.slice(1).forEach(function (d, i) {
                 var date = date_fns__WEBPACK_IMPORTED_MODULE_3__["format"](d, 'dd/MM/yyyy');
@@ -65655,32 +65709,47 @@ var MapchartComponent = /** @class */ (function () {
                 self.data[date].total = 0;
                 self.data[date].total_death = 0;
                 Object.keys(self.data[date]['countries']).forEach(function (element) {
-                    // if (self.data[date]['countries'][element].total === 0) {
-                    var lastValue1 = self.data[lastDate]['countries'][element].total;
-                    self.data[date]['countries'][element].total += lastValue1;
-                    // }
-                    self.data[date].total += self.data[date]['countries'][element].total;
-                    // if (self.data[date]['countries'][element].total_death === 0) {
-                    var lastValue2 = self.data[lastDate]['countries'][element].total_death;
-                    self.data[date]['countries'][element].total_death += lastValue2;
-                    // }
-                    self.data[date].total_death += self.data[date]['countries'][element].total_death;
-                    Object.keys(self.data[lastDate]['countries'][element]['states']).forEach(function (state) {
-                        if (state in self.data[date]['countries'][element]['states'] === false ||
-                            (state in self.data[date]['countries'][element]['states'] === true
-                                && self.data[date]['countries'][element]['states'][state].total === 0
-                                && self.data[date]['countries'][element]['states'][state].total < self.data[lastDate]['countries'][element]['states'][state].total)) {
-                            var lastValue = self.data[lastDate]['countries'][element]['states'][state];
-                            self.data[date]['countries'][element]['states'][state] = __assign({}, lastValue);
+                    if (self.countriesParam[element.toLowerCase()].haveStatesData) {
+                        if (self.data[date]['countries'][element].total === 0) {
+                            var lastValue1 = self.data[lastDate]['countries'][element].total;
+                            self.data[date]['countries'][element].total = lastValue1;
                         }
-                        if (state in self.data[date]['countries'][element]['states'] === false ||
-                            (state in self.data[date]['countries'][element]['states'] === true
-                                && self.data[date]['countries'][element]['states'][state].total_death === 0
-                                && self.data[date]['countries'][element]['states'][state].total_death < self.data[lastDate]['countries'][state]['states'][state].total_death)) {
-                            var lastValue = self.data[lastDate]['countries'][element]['states'][state];
-                            self.data[date]['countries'][element]['states'][state].total_death = lastValue.total_death;
+                        if (self.data[date]['countries'][element].total_death === 0) {
+                            var lastValue2 = self.data[lastDate]['countries'][element].total_death;
+                            self.data[date]['countries'][element].total_death = lastValue2;
                         }
-                    });
+                        Object.keys(self.data[lastDate]['countries'][element]['states']).forEach(function (state) {
+                            if (state in self.data[date]['countries'][element]['states'] === false ||
+                                (state in self.data[date]['countries'][element]['states'] === true
+                                    && self.data[date]['countries'][element]['states'][state].total < self.data[lastDate]['countries'][element]['states'][state].total)) {
+                                var lastValue = self.data[lastDate]['countries'][element]['states'][state];
+                                self.data[date]['countries'][element]['states'][state] = __assign({}, lastValue);
+                            }
+                            if (state in self.data[date]['countries'][element]['states'] === false ||
+                                (state in self.data[date]['countries'][element]['states'] === true
+                                    && self.data[date]['countries'][element]['states'][state].total_death < self.data[lastDate]['countries'][element]['states'][state].total_death)) {
+                                var lastValue = self.data[lastDate]['countries'][element]['states'][state];
+                                self.data[date]['countries'][element]['states'][state].total_death = lastValue.total_death;
+                            }
+                        });
+                        var totalCountry_1 = 0, totalCountryDeaths_1 = 0;
+                        Object.keys(self.data[date]['countries'][element]['states']).forEach(function (state) {
+                            totalCountryDeaths_1 += self.data[date]['countries'][element]['states'][state].total_death;
+                            totalCountry_1 += self.data[date]['countries'][element]['states'][state].total;
+                        });
+                        self.data[date]['countries'][element].total = totalCountry_1;
+                        self.data[date]['countries'][element].total_death = totalCountryDeaths_1;
+                        self.data[date].total += totalCountry_1;
+                        self.data[date].total_death += totalCountryDeaths_1;
+                    }
+                    else {
+                        var lastValue1 = self.data[lastDate]['countries'][element].total;
+                        self.data[date]['countries'][element].total += lastValue1;
+                        self.data[date].total += self.data[date]['countries'][element].total;
+                        var lastValue2 = self.data[lastDate]['countries'][element].total_death;
+                        self.data[date]['countries'][element].total_death += lastValue2;
+                        self.data[date].total_death += self.data[date]['countries'][element].total_death;
+                    }
                 });
             });
             self.listDatesCountries.sort(function (a, b) {

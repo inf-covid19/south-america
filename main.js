@@ -841,7 +841,7 @@ Object(_angular_platform_browser_dynamic__WEBPACK_IMPORTED_MODULE_1__["platformB
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! /home/chicobentojr/Workspace/UFRGS/covid19-inf/covid19-analysis/visualization/material-covid-br/src/main.ts */"./src/main.ts");
+module.exports = __webpack_require__(/*! /home/m0rb1u5/covid19-analysis/visualization/material-covid-br/src/main.ts */"./src/main.ts");
 
 
 /***/ })
