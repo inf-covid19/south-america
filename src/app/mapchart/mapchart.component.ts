@@ -47,7 +47,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 		argentina: [],
 		bolivia: [],
 		brazil: ['ac', 'al', 'ap', 'am', 'ba', 'ce', 'df', 'es', 'go', 'ma', 'mt', 'ms', 'mg', 'pa', 'pb', 'pr', 'pe', 'pi', 'rj', 'rn', 'rs', 'ro', 'rr', 'sc', 'sp', 'se', 'to'],
-		chile: [],
+		chile: ['cl-ta', 'cl-an', 'cl-at', 'cl-co', 'cl-ar', 'cl-vs', 'cl-li', 'cl-ml', 'cl-bi', 'cl-ll', 'cl-ai', 'cl-ma', 'cl-rm', 'cl-lr', 'cl-ap', 'cl-nb'],
 		colombia: [],
 		ecuador: [],
 		guyana: [],
@@ -67,8 +67,8 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 	countriesParam = {
 		argentina: {haveStatesData: false},
 		bolivia: {haveStatesData: false},
-		brazil: {haveStatesData: true, date: 'date', dateFormat: '%Y-%m-%d', columnFilter: 'place_type', valueFilter: 'state', cases: 'confirmed', deaths: 'deaths', population: 'estimated_population_2019'},
-		chile: {haveStatesData: false},
+		brazil: {haveStatesData: true, date: 'date', dateFormat: '%Y-%m-%d', columnFilter: 'place_type', valueFilter: 'state', cases: 'confirmed', deaths: 'deaths', population: 'estimated_population_2019', hasKSeparator: false, kSeparator: ''},
+		chile: {haveStatesData: true, date: 'date', dateFormat: '%Y-%m-%d', columnFilter: 'place_type', valueFilter: 'region', cases: 'cases', deaths: 'deaths', population: '', hasKSeparator: true, kSeparator: '.'},
 		colombia: {haveStatesData: false},
 		ecuador: {haveStatesData: false},
 		guyana: {haveStatesData: false},
@@ -159,14 +159,27 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 							let date = fns.format(dateDate, 'dd/MM/yyyy')
 							let columnFilter = d[self.countriesParam[element.toLowerCase()].columnFilter]
 							let valueFilter = self.countriesParam[element.toLowerCase()].valueFilter
-							let cases = parseInt(d[self.countriesParam[element.toLowerCase()].cases])
-							let deaths = parseInt(d[self.countriesParam[element.toLowerCase()].deaths])
-							let population = parseInt(d[self.countriesParam[element.toLowerCase()].population])
+							
+							let cases = d[self.countriesParam[element.toLowerCase()].cases]
+							let deaths = d[self.countriesParam[element.toLowerCase()].deaths]
+							let population = d[self.countriesParam[element.toLowerCase()].population]
+							
+							if (self.countriesParam[element.toLowerCase()].hasKSeparator) {
+								cases = cases.replace(self.countriesParam[element.toLowerCase()].kSeparator, '');
+								deaths = deaths.replace(self.countriesParam[element.toLowerCase()].kSeparator, '');
+								if (!isNaN(population)) {
+									population = population.replace(self.countriesParam[element.toLowerCase()].kSeparator, '');
+								}
+							}
+							
+							cases = parseInt(cases)
+							deaths = parseInt(deaths)
+							population = parseInt(population)
 
 							cases = isNaN(cases) ? 0 : cases
 							deaths = isNaN(deaths) ? 0 : deaths
 
-							if (columnFilter === valueFilter) {
+							if (columnFilter === valueFilter || valueFilter === '') {
 								if (self.listDatesCountries.indexOf(date) === -1 && !(cases === 0 && deaths === 0)) {
 									self.listDatesCountries.push(date);
 								}
