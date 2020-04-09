@@ -64251,7 +64251,7 @@ var MapchartComponent = /** @class */ (function () {
             argentina: [],
             bolivia: [],
             brazil: ['ac', 'al', 'ap', 'am', 'ba', 'ce', 'df', 'es', 'go', 'ma', 'mt', 'ms', 'mg', 'pa', 'pb', 'pr', 'pe', 'pi', 'rj', 'rn', 'rs', 'ro', 'rr', 'sc', 'sp', 'se', 'to'],
-            chile: [],
+            chile: ['cl-ta', 'cl-an', 'cl-at', 'cl-co', 'cl-ar', 'cl-vs', 'cl-li', 'cl-ml', 'cl-bi', 'cl-ll', 'cl-ai', 'cl-ma', 'cl-rm', 'cl-lr', 'cl-ap', 'cl-nb'],
             colombia: [],
             ecuador: [],
             guyana: [],
@@ -64268,8 +64268,8 @@ var MapchartComponent = /** @class */ (function () {
         this.countriesParam = {
             argentina: { haveStatesData: false },
             bolivia: { haveStatesData: false },
-            brazil: { haveStatesData: true, date: 'date', dateFormat: '%Y-%m-%d', columnFilter: 'place_type', valueFilter: 'state', cases: 'confirmed', deaths: 'deaths', population: 'estimated_population_2019' },
-            chile: { haveStatesData: false },
+            brazil: { haveStatesData: true, date: 'date', dateFormat: '%Y-%m-%d', columnFilter: 'place_type', valueFilter: 'state', cases: 'confirmed', deaths: 'deaths', population: 'estimated_population_2019', hasKSeparator: false, kSeparator: '' },
+            chile: { haveStatesData: true, date: 'date', dateFormat: '%Y-%m-%d', columnFilter: 'place_type', valueFilter: 'region', cases: 'cases', deaths: 'deaths', population: '', hasKSeparator: true, kSeparator: '.' },
             colombia: { haveStatesData: false },
             ecuador: { haveStatesData: false },
             guyana: { haveStatesData: false },
@@ -65629,12 +65629,22 @@ var MapchartComponent = /** @class */ (function () {
                         var date = date_fns__WEBPACK_IMPORTED_MODULE_3__["format"](dateDate, 'dd/MM/yyyy');
                         var columnFilter = d[self.countriesParam[element.toLowerCase()].columnFilter];
                         var valueFilter = self.countriesParam[element.toLowerCase()].valueFilter;
-                        var cases = parseInt(d[self.countriesParam[element.toLowerCase()].cases]);
-                        var deaths = parseInt(d[self.countriesParam[element.toLowerCase()].deaths]);
-                        var population = parseInt(d[self.countriesParam[element.toLowerCase()].population]);
+                        var cases = d[self.countriesParam[element.toLowerCase()].cases];
+                        var deaths = d[self.countriesParam[element.toLowerCase()].deaths];
+                        var population = d[self.countriesParam[element.toLowerCase()].population];
+                        if (self.countriesParam[element.toLowerCase()].hasKSeparator) {
+                            cases = cases.replace(self.countriesParam[element.toLowerCase()].kSeparator, '');
+                            deaths = deaths.replace(self.countriesParam[element.toLowerCase()].kSeparator, '');
+                            if (!isNaN(population)) {
+                                population = population.replace(self.countriesParam[element.toLowerCase()].kSeparator, '');
+                            }
+                        }
+                        cases = parseInt(cases);
+                        deaths = parseInt(deaths);
+                        population = parseInt(population);
                         cases = isNaN(cases) ? 0 : cases;
                         deaths = isNaN(deaths) ? 0 : deaths;
-                        if (columnFilter === valueFilter) {
+                        if (columnFilter === valueFilter || valueFilter === '') {
                             if (self.listDatesCountries.indexOf(date) === -1 && !(cases === 0 && deaths === 0)) {
                                 self.listDatesCountries.push(date);
                             }
