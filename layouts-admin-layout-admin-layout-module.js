@@ -64248,8 +64248,8 @@ var MapchartComponent = /** @class */ (function () {
             500000000000
         ];
         this.statesByCountry = {
-            argentina: [],
-            bolivia: [],
+            argentina: ['ba', 'caba', 'ca', 'ch', 'ct', 'cb', 'cr', 'er', 'fo', 'jy', 'lp', 'lr', 'mz', 'mi', 'nq', 'rn', 'sa', 'sj', 'sl', 'sc', 'sf', 'se', 'tf', 'tu', 'sindef'],
+            bolivia: ['lp', 'cb', 'sc', 'or', 'pt', 'tj', 'ch', 'bn', 'pn'],
             brazil: ['ac', 'al', 'ap', 'am', 'ba', 'ce', 'df', 'es', 'go', 'ma', 'mt', 'ms', 'mg', 'pa', 'pb', 'pr', 'pe', 'pi', 'rj', 'rn', 'rs', 'ro', 'rr', 'sc', 'sp', 'se', 'to'],
             chile: ['cl-ta', 'cl-an', 'cl-at', 'cl-co', 'cl-ar', 'cl-vs', 'cl-li', 'cl-ml', 'cl-bi', 'cl-ll', 'cl-ai', 'cl-ma', 'cl-rm', 'cl-lr', 'cl-ap', 'cl-nb'],
             colombia: [],
@@ -64266,8 +64266,8 @@ var MapchartComponent = /** @class */ (function () {
             argentina: "Argentina", bolivia: "Bolivia", brazil: "Brasil", chile: "Chile", colombia: "Colombia", ecuador: "Ecuador", guyana: "Guyana", paraguay: "Paraguay", peru: "Perú", suriname: "Surinam", uruguay: "Uruguay", venezuela: "Venezuela"
         };
         this.countriesParam = {
-            argentina: { haveStatesData: false },
-            bolivia: { haveStatesData: false },
+            argentina: { haveStatesData: true, date: 'date', dateFormat: '%Y-%m-%d', columnFilter: 'place_type', valueFilter: 'provincia', cases: 'cases', deaths: 'deaths', population: '', hasKSeparator: true, kSeparator: '.' },
+            bolivia: { haveStatesData: true, date: 'date', dateFormat: '%Y-%m-%d', columnFilter: 'place_type', valueFilter: 'departamento', cases: 'cases', deaths: 'deaths', population: '', hasKSeparator: true, kSeparator: '.' },
             brazil: { haveStatesData: true, date: 'date', dateFormat: '%Y-%m-%d', columnFilter: 'place_type', valueFilter: 'state', cases: 'confirmed', deaths: 'deaths', population: 'estimated_population_2019', hasKSeparator: false, kSeparator: '' },
             chile: { haveStatesData: true, date: 'date', dateFormat: '%Y-%m-%d', columnFilter: 'place_type', valueFilter: 'region', cases: 'cases', deaths: 'deaths', population: '', hasKSeparator: true, kSeparator: '.' },
             colombia: { haveStatesData: false },
