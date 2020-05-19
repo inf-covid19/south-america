@@ -35,6 +35,12 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 	lineChartStates = [];
 	popScale = 100000;
 
+	// lineBorderColor = 'rgb(0,0,0,0.87)';
+	lineBorderColor = '#1d1d1da8';
+	lineStrongerBorderColor = '#1d1d1da8';
+	// lineStrongerBorderColor = 'rgb(0,0,0,0.87)';
+	colorText = '#1d1d1da8';
+
 	population = { total: 0 };
 
 	counts = [ 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000,
@@ -87,13 +93,6 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 		return this.counts.reduce(function(prev, curr) {
 			return Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev;
 		});
-	};
-
-	coloresGoogle = n => {
-		const coloresG = [ '#3366cc', '#dc3912', '#ff9900', '#109618', '#990099', '#0099c6', '#dd4477', '#66aa00', '#b82e2e',
-			'#316395', '#994499', '#22aa99', '#aaaa11', '#6633cc', '#e67300', '#8b0707', '#651067', '#329262', '#5574a6', '#3b3eac'
-		];
-		return coloresG[n % coloresG.length];
 	};
 
 	constructor() {
@@ -387,14 +386,14 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 		const self = this;
 		const parseDate = d3.timeParse('%d/%m/%Y');
 		const formatTime = d3.timeFormat('%d/%m/%Y');
-		const formatTimeFront = d3.timeFormat('%d/%m/%Y');
+		const formatTimeFront = d3.timeFormat('%d/%m');
 		const iniDate = new Date(parseDate(self.minSelectedDay)).valueOf();
 		const endDate = new Date(parseDate(self.maxSelectedDay)).valueOf();
 
 		d3.select('#date-slider').selectAll('*').remove();
 		let container = d3.select('#date-slider').node() as any;
 		container = container.parentNode.parentNode.getBoundingClientRect();
-		const margin = { top: 0, right: 15, bottom: 35, left: 0 };
+		const margin = { top: 0, right: 6, bottom: 35, left: 6 };
 		const width = container.width - margin.left - margin.right;
 		const height = container.height - margin.top - margin.bottom;
 
@@ -473,8 +472,8 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 			.enter()
 			.append('path')
 			.attr('class', 'handle--custom')
-			.attr('stroke', '#eeeeee')
-			.attr('fill', '#eeeeee')
+			.attr('stroke', self.lineBorderColor)
+			.attr('fill', self.lineBorderColor)
 			.attr('cursor', 'ew-resize')
 			.attr('d', brushResizePath);
 
@@ -589,11 +588,14 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 	};
 
 	getPlasmaList = cant => {
-		const rangeColor = [];
+		/*const rangeColor = [];
 		for (let i = 0; i < cant; i++) {
 			rangeColor.push(d3.interpolateYlOrRd(i / (cant - 1)));
 		}
-		return rangeColor;
+		return rangeColor;*/
+		return ['#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb',
+			'#41b6c4', '#1d91c0', '#225ea8', '#253494',
+			'#081d58'];
 	};
 
 	formatValueSeperator = n => {
@@ -730,29 +732,29 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 					}
 					return color(estColor);
 				})
-				.attr('stroke', '#eeeeee')
+				.attr('stroke', self.lineBorderColor)
 				.attr('d', path)
 				.on('mouseover', self.tipWorld.show)
 				.on('mouseout', function() {
 					d3.selectAll('#world-g-map path').each(function(d) {
 						if (d3.select(this).attr('selected') !== 'true') {
-							d3.select(this).attr('stroke', '#eeeeee');
-							d3.select(this).attr('stroke-width', 2);
+							d3.select(this).attr('stroke', self.lineBorderColor);
+							d3.select(this).attr('stroke-width', 1);
 						}
 					});
 					self.tipWorld.hide();
 				})
 				.on('click', function(d) {
 					d3.selectAll('#world-g-map path').each(function() {
-						d3.select(this).attr('stroke', '#eeeeee');
+						d3.select(this).attr('stroke', self.lineBorderColor);
 						d3.select(this).attr('stroke-width', 2);
 						d3.select(this).attr('selected', 'false');
 					});
 					self.selectedCountry = d.properties.code;
 					self.loadWidgetCountry(self.selectedCountry, byDeaths, byDensidade);
 					d3.select(this)
-						.attr('stroke', '#007acc')
-						.attr('stroke-width', 6)
+						.attr('stroke', self.lineStrongerBorderColor)
+						.attr('stroke-width', 5)
 						.attr('selected', 'true');
 
 				});
@@ -764,8 +766,8 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 			d3.selectAll('#world-g-map path').each(function(d) {
 				if (d.properties.code === self.selectedCountry) {
 					d3.select(this)
-						.attr('stroke', '#007acc')
-						.attr('stroke-width', 6)
+						.attr('stroke', self.lineStrongerBorderColor)
+						.attr('stroke-width', 5)
 						.attr('selected', 'true');
 				}
 			});
@@ -778,14 +780,15 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 				const selfTemp = this;
 				d3.selectAll('#world-g-map path').each(function() {
 					if (d3.select(this).attr('selected') !== 'true' && this === selfTemp) {
-						d3.select(this).attr('stroke', '#717171');
+						// d3.select(this).attr('stroke', '#717171');
+						d3.select(this).attr('stroke', self.lineStrongerBorderColor);
 						d3.select(this).attr('stroke-width', 3);
 					}
 				});
 				const labelTot = byDensidade === true ? 'Densidad casos' : 'Total casos';
 				const labelTotDeath = byDensidade === true ? 'Densidad muertes' : 'Total muertes';
 				return (
-					'<div style="opacity:0.8;background-color:#8b0707;padding:7px;color:white">' +
+					'<div style="opacity:0.8;background-color:#253494;padding:7px;color:white">' +
 					'<text>País: </text><text style="font-weight: 800">' +
 					d.properties.name +
 					'</text><br/>' +
@@ -824,7 +827,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 			.attr('x', width / 1.7)
 			.attr('y', 20)
 			.attr('transform', 'scale(' + scaleValue + ')')
-			.attr('fill', '#aaaaaa')
+			.attr('fill', self.colorText)
 			.style('background-color', '#000000')
 			.attr('font-family', 'sans-serif')
 			.style('font-size', '23px')
@@ -857,16 +860,18 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 			.attr('font-family', 'sans-serif')
 			.attr('x', -42)
 			.attr('y', 20)
-			.attr('fill', '#aaaaaa')
+			.attr('fill', self.colorText)
 			.attr('text-anchor', 'start')
 			.attr('font-size', '20px')
 			.attr('font-weight', 'bold')
 			.text('Casos');
 
+		const currentScale = Math.min(scaleValue, (0.5 * height) / 200);
 		let lastTick = 0;
 		g.attr(
 			'transform',
-			'translate(50, ' + height / 1.7 + ') scale(' + (0.5 * height) / 200 + ')'
+			'translate(50, ' + (height - 160 * currentScale) + ') scale(' + currentScale + ')'
+			// 'translate(50, ' + height / 1.7 + ') scale(' + (0.5 * height) / 200 + ')'
 		)
 			.attr('class', 'legend')
 			.call(
@@ -1081,10 +1086,10 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 					return color(stateColor);
 				})
 				.attr('d', path)
-				.attr('stroke', '#eeeeee')
+				.attr('stroke', self.lineBorderColor)
 				.on('mouseover', self.tipState.show)
 				.on('mouseout', function() {
-					d3.select(this).attr('stroke', '#eeeeee');
+					d3.select(this).attr('stroke', self.lineBorderColor);
 					self.tipState.hide();
 				});
 
@@ -1101,11 +1106,12 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 			.attr('class', 'd3-tip')
 			.html(function(d) {
 				// console.log(d, self.population);
-				d3.select(this).attr('stroke', '#717171');
+				// d3.select(this).attr('stroke', '#717171');
+				d3.select(this).attr('stroke', self.lineStrongerBorderColor);
 				const labelTot = byDensidade === true ? 'Densidad casos' : 'Total casos';
 				const labelTotDeath = byDensidade === true ? 'Densidad muertes' : 'Total muertes';
 				return (
-					'<div style="opacity:0.8;background-color:#8b0707;padding:7px;color:white">' +
+					'<div style="opacity:0.8;background-color:#253494;padding:7px;color:white">' +
 					'<text>Estado: </text><text style="font-weight: 800">' +
 					d.properties.name +
 					'</text><br/>' +
@@ -1142,7 +1148,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 			.attr('x', width / (2.2 * scaleValue))
 			.attr('y', 20)
 			.attr('transform', 'scale(' + scaleValue + ')')
-			.attr('fill', '#aaaaaa')
+			.attr('fill', self.colorText)
 			.attr('font-family', 'sans-serif')
 			.style('font-size', '23px')
 			.style('font-weight', 'bold')
@@ -1177,7 +1183,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 			.attr('font-family', 'sans-serif')
 			.attr('x', -42)
 			.attr('y', 20)
-			.attr('fill', '#aaaaaa')
+			.attr('fill', self.colorText)
 			.attr('text-anchor', 'start')
 			.attr('font-size', '22px')
 			.attr('font-weight', 'bold')
@@ -1349,7 +1355,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 			svg.append('text')
 				.attr('x', width / 3.5)
 				.attr('y', margin.top)
-				.attr('fill', '#aaaaaa')
+				.attr('fill', self.colorText)
 				.attr('font-family', 'sans-serif')
 				.style('font-size', 'calc(2vh)')
 				.style('font-weight', 'bold')
@@ -1396,7 +1402,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 				.attr('x', 17)
 				.attr('y', function (d, i) { return i * gridSizeY; })
 				.style('text-anchor', 'end')
-				.style('fill', '#aaaaaa')
+				.style('fill', self.colorText)
 				.attr('transform', 'translate(0,' + gridSizeY / 1.5 + ')');
 
 			const heatMapG = scrollGDiv
@@ -1492,7 +1498,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 			legend.selectAll('text')
 				.data(legendRange)
 				.join('text')
-				.attr('fill', '#aaaaaa')
+				.attr('fill', self.colorText)
 				.attr('x', function(d, i) { return legendElementWidth * i; })
 				.attr('y', gridSizeY + 2)
 				.text(function(d, i) {
@@ -1507,7 +1513,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 			.offset([20, -80])
 			.html(function(d) {
 				return (
-					'<div style="opacity:0.8;background-color:#8b0707;padding:7px;color:white">' +
+					'<div style="opacity:0.8;background-color:#253494;padding:7px;color:white">' +
 					'<text style="font-weight: 800">' +
 					self.countriesNames[d.region] +
 					'</text></br><text>' +
@@ -1651,7 +1657,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 			svg.append('text')
 				.attr('x', width / 3.5)
 				.attr('y', margin.top)
-				.attr('fill', '#aaaaaa')
+				.attr('fill', self.colorText)
 				.attr('font-family', 'sans-serif')
 				.style('font-size', 'calc(2vh)')
 				.style('font-weight', 'bold')
@@ -1701,7 +1707,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 				.attr('x', 45)
 				.attr('y', function (d, i) { return i * gridSizeY; })
 				.style('text-anchor', 'end')
-				.style('fill', '#aaaaaa')
+				.style('fill', self.colorText)
 				.attr('transform', 'translate(0,' + gridSizeY / 1.5 + ')');
 
 			const heatMapG = scrollGDiv
@@ -1798,7 +1804,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 			legend.selectAll('text')
 				.data(legendRange)
 				.join('text')
-				.attr('fill', '#aaaaaa')
+				.attr('fill', self.colorText)
 				.attr('x', function(d, i) { return legendElementWidth * i; })
 				.attr('y', gridSizeY + 2)
 				.text(function(d, i) {
@@ -1829,7 +1835,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 			.offset([20, -80])
 			.html(function(d) {
 				return (
-					'<div style="opacity:0.8;background-color:#8b0707;padding:7px;color:white">' +
+					'<div style="opacity:0.8;background-color:#253494;padding:7px;color:white">' +
 					'<text style="font-weight: 800">' +
 					self.statesNames[d] +
 					'</text>' +

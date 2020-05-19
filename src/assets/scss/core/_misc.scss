@@ -1,7 +1,8 @@
 body{
-    background-color: #121212;
-    color: #eeeeee;
-    font-weight: 300;
+  background-color: #FFFFFF;
+  //background-color: #121212;
+  //color: #eeeeee;
+  font-weight: 300;
   overflow: hidden;
 }
 
@@ -45,7 +46,9 @@ a{
 label{
     font-size: 14px;
     line-height: 1.42857;
-    color: $checkboxes-text-color;
+    //NOAMLR
+    //color: $checkboxes-text-color;
+    color: #1d1d1da8;
     font-weight: 400;
 }
 

@@ -86,7 +86,8 @@
     flex-flow: nowrap;
     align-items: center;
     //color: $bmd-dropdown-link-color;
-    color: #aaaaaa;
+    //color: #aaaaaa;
+    color: #1d1d1da8;
     font-weight: normal;
     text-decoration: none;
 
@@ -115,9 +116,11 @@
   a:hover,
   a:focus,
   a:active {
-    @include shadow-small-color(#ff3d00);
+    //@include shadow-small-color(#ff3d00);
+    @include shadow-small-color(#2171B5);
     //background-color: $brand-primary;
-    background-color: #ff3d00;
+    //background-color: #ff3d00;
+    background-color: #2171B5;
     color: #eeeeee;
     font-weight: 700;
   }
@@ -208,5 +211,6 @@
 }
 
 .dropdown-menu.dropdown-menu-right.show {
-  background-color: #121212;
+  //background-color: #121212;
+  background-color: #FFFFFF;
 }
