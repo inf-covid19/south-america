@@ -63630,7 +63630,7 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("<div class=\"main-content\">\n  <div class=\"container-fluid\">\n      <div class=\"row\">\n          <div class=\"col-lg-2 col-md-2 col-2 col-sm-2 col-xs-2\">\n              <div class=\"card sm-card\">\n                  <div class=\"card-body\">\n                      <h4 class=\"bg-title gt-ranking-number\" id=\"name-total-world\"></h4>\n                      <h2 class=\"gt-number gt-bg-ranking-number\" id=\"total-world\">0</h2>\n                      <h4 class=\"bg-title gt-ranking-number\">Muertes</h4>\n                      <h3 class=\"gt-dark-number gt-bg-ranking-number\" id=\"total-world-deaths\">0</h3>\n                  </div>\n              </div>\n              <div class=\"card gt-card\">\n                  <div class=\"card-body\">\n                      <h5 class=\"bg-title gt-ranking-number\" style=\"padding-left: 6px;\">Informe por país</h5>\n                      <div class=\"table-ranking my-custom-scrollbar\">\n                          <table>\n                              <tbody id=\"countries-ranking\">\n                              </tbody>\n                          </table>\n                      </div>\n                  </div>\n              </div>\n          </div>\n          <div class=\"col-lg-3 col-md-3 col-3 col-sm-3 col-xs-3\">\n              <div class=\"card bg-card\">\n                  <div class=\"card-body\">\n                      <app-mapchart></app-mapchart>\n                  </div>\n              </div>\n              <div class=\"card bg-card\">\n                  <div class=\"card-body\">\n                      <svg id=\"svg-state\" class=\"h-100 w-100\"></svg>\n                  </div>\n              </div>\n          </div>\n          <div class=\"col-lg-2 col-md-2 col-2 col-sm-2 col-xs-2\">\n              <div class=\"card sm-card\">\n                  <div class=\"card-body\">\n                      <h4 class=\"bg-title gt-ranking-number\" id=\"name-total-country\"></h4>\n                      <h2 class=\"gt-number gt-bg-ranking-number\" id=\"total-country\">0</h2>\n                      <h4 class=\"bg-title gt-ranking-number\">Muertes</h4>\n                      <h3 class=\"gt-dark-number gt-bg-ranking-number\" id=\"total-country-deaths\">0</h3>\n                  </div>\n              </div>\n              <div class=\"card gt-card\">\n                  <div class=\"card-body\">\n                      <h5 class=\"bg-title gt-ranking-number\">Informe por estado</h5>\n                      <div class=\"table-ranking my-custom-scrollbar\">\n                          <table>\n                              <tbody id=\"states-ranking\">\n                              </tbody>\n                          </table>\n                      </div>\n                  </div>\n              </div>\n          </div>\n          <div class=\"col-lg-5 col-md-5 col-5 col-sm-5 col-xs-5\">\n              <!--<div class=\"card md-card\">\n                  <div class=\"card-body\">\n                      <svg id=\"svg-linechart-country\" class=\"h-100 w-100\"></svg>\n                  </div>\n              </div>-->\n              <div class=\"card bg-card\">\n                  <div class=\"card-body\">\n                      <svg id=\"svg-linechart-country\" class=\"h-100 w-100\"></svg>\n                  </div>\n              </div>\n              <div class=\"card bg-card\">\n                  <div class=\"card-body\">\n                      <svg id=\"svg-linechart-state\" class=\"h-100 w-100\"></svg>\n                  </div>\n              </div>\n          </div>\n      </div>\n  </div>\n</div>\n");
+/* harmony default export */ __webpack_exports__["default"] = ("<div class=\"main-content\">\n  <div class=\"container-fluid\">\n      <div class=\"row\">\n<!--          <div class=\"col-lg-3 col-md-3 col-3 col-sm-3 col-xs-3\">-->\n          <div class=\"col-lg-3 col-12\">\n              <div class=\"card bg-card\">\n                  <div class=\"card-body\">\n                      <app-mapchart></app-mapchart>\n                  </div>\n              </div>\n              <div class=\"card bg-card\">\n                  <div class=\"card-body\">\n                      <svg id=\"svg-state\" class=\"h-100 w-100\"></svg>\n                  </div>\n              </div>\n          </div>\n<!--          <div class=\"col-lg-2 col-md-2 col-2 col-sm-2 col-xs-2\">-->\n          <div class=\"col-lg-2 col-6\">\n              <div class=\"card sm-card\">\n                  <div class=\"card-body\">\n                      <h4 class=\"bg-title gt-ranking-number\" id=\"name-total-world\"></h4>\n                      <h2 class=\"gt-number gt-bg-ranking-number\" id=\"total-world\">0</h2>\n                      <h4 class=\"bg-title gt-ranking-number\">Muertes</h4>\n                      <h3 class=\"gt-dark-number gt-bg-ranking-number\" id=\"total-world-deaths\">0</h3>\n                  </div>\n              </div>\n              <div class=\"card gt-card\">\n                  <div class=\"card-body\">\n                      <h5 class=\"bg-title gt-ranking-number\" style=\"padding-left: 6px;\">Informe por país</h5>\n                      <div class=\"table-ranking my-custom-scrollbar\">\n                          <table>\n                              <tbody id=\"countries-ranking\">\n                              </tbody>\n                          </table>\n                      </div>\n                  </div>\n              </div>\n          </div>\n          <!--          <div class=\"col-lg-2 col-md-2 col-2 col-sm-2 col-xs-2\">-->\n          <div class=\"col-lg-2 col-6\">\n              <div class=\"card sm-card\">\n                  <div class=\"card-body\">\n                      <h4 class=\"bg-title gt-ranking-number\" id=\"name-total-country\"></h4>\n                      <h2 class=\"gt-number gt-bg-ranking-number\" id=\"total-country\">0</h2>\n                      <h4 class=\"bg-title gt-ranking-number\">Muertes</h4>\n                      <h3 class=\"gt-dark-number gt-bg-ranking-number\" id=\"total-country-deaths\">0</h3>\n                  </div>\n              </div>\n              <div class=\"card gt-card\">\n                  <div class=\"card-body\">\n                      <h5 class=\"bg-title gt-ranking-number\">Informe por estado</h5>\n                      <div class=\"table-ranking my-custom-scrollbar\">\n                          <table>\n                              <tbody id=\"states-ranking\">\n                              </tbody>\n                          </table>\n                      </div>\n                  </div>\n              </div>\n          </div>\n<!--          <div class=\"col-lg-5 col-md-5 col-5 col-sm-5 col-xs-5\">-->\n          <div class=\"col-lg-5 col-12\">\n              <!--<div class=\"card md-card\">\n                  <div class=\"card-body\">\n                      <svg id=\"svg-linechart-country\" class=\"h-100 w-100\"></svg>\n                  </div>\n              </div>-->\n              <div class=\"card bg-card\">\n                  <div class=\"card-body\">\n                      <svg id=\"svg-linechart-country\" class=\"h-100 w-100\"></svg>\n                  </div>\n              </div>\n              <div class=\"card bg-card\">\n                  <div class=\"card-body\">\n                      <svg id=\"svg-linechart-state\" class=\"h-100 w-100\"></svg>\n                  </div>\n              </div>\n          </div>\n      </div>\n  </div>\n</div>\n");
 
 /***/ }),
 
@@ -64241,6 +64241,11 @@ var MapchartComponent = /** @class */ (function () {
         this.lineChartCountries = [];
         this.lineChartStates = [];
         this.popScale = 100000;
+        // lineBorderColor = 'rgb(0,0,0,0.87)';
+        this.lineBorderColor = '#1d1d1da8';
+        this.lineStrongerBorderColor = '#1d1d1da8';
+        // lineStrongerBorderColor = 'rgb(0,0,0,0.87)';
+        this.colorText = '#1d1d1da8';
         this.population = { total: 0 };
         this.counts = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000,
             2000000, 5000000, 10000000, 20000000, 50000000, 100000000, 200000000, 500000000,
@@ -64287,12 +64292,6 @@ var MapchartComponent = /** @class */ (function () {
                 return Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev;
             });
         };
-        this.coloresGoogle = function (n) {
-            var coloresG = ['#3366cc', '#dc3912', '#ff9900', '#109618', '#990099', '#0099c6', '#dd4477', '#66aa00', '#b82e2e',
-                '#316395', '#994499', '#22aa99', '#aaaa11', '#6633cc', '#e67300', '#8b0707', '#651067', '#329262', '#5574a6', '#3b3eac'
-            ];
-            return coloresG[n % coloresG.length];
-        };
         this.colorScale = function (colorRange, legendRange, value) {
             var color = colorRange[colorRange.length - 1];
             for (var index = 0; index < colorRange.length; index++) {
@@ -64306,13 +64305,13 @@ var MapchartComponent = /** @class */ (function () {
             var self = _this;
             var parseDate = d3__WEBPACK_IMPORTED_MODULE_1__["timeParse"]('%d/%m/%Y');
             var formatTime = d3__WEBPACK_IMPORTED_MODULE_1__["timeFormat"]('%d/%m/%Y');
-            var formatTimeFront = d3__WEBPACK_IMPORTED_MODULE_1__["timeFormat"]('%d/%m/%Y');
+            var formatTimeFront = d3__WEBPACK_IMPORTED_MODULE_1__["timeFormat"]('%d/%m');
             var iniDate = new Date(parseDate(self.minSelectedDay)).valueOf();
             var endDate = new Date(parseDate(self.maxSelectedDay)).valueOf();
             d3__WEBPACK_IMPORTED_MODULE_1__["select"]('#date-slider').selectAll('*').remove();
             var container = d3__WEBPACK_IMPORTED_MODULE_1__["select"]('#date-slider').node();
             container = container.parentNode.parentNode.getBoundingClientRect();
-            var margin = { top: 0, right: 15, bottom: 35, left: 0 };
+            var margin = { top: 0, right: 6, bottom: 35, left: 6 };
             var width = container.width - margin.left - margin.right;
             var height = container.height - margin.top - margin.bottom;
             var x = d3__WEBPACK_IMPORTED_MODULE_1__["scaleTime"]()
@@ -64375,8 +64374,8 @@ var MapchartComponent = /** @class */ (function () {
                 .enter()
                 .append('path')
                 .attr('class', 'handle--custom')
-                .attr('stroke', '#eeeeee')
-                .attr('fill', '#eeeeee')
+                .attr('stroke', self.lineBorderColor)
+                .attr('fill', self.lineBorderColor)
                 .attr('cursor', 'ew-resize')
                 .attr('d', brushResizePath);
             function onbrush() {
@@ -64473,11 +64472,14 @@ var MapchartComponent = /** @class */ (function () {
             }
         };
         this.getPlasmaList = function (cant) {
-            var rangeColor = [];
-            for (var i = 0; i < cant; i++) {
-                rangeColor.push(d3__WEBPACK_IMPORTED_MODULE_1__["interpolateYlOrRd"](i / (cant - 1)));
+            /*const rangeColor = [];
+            for (let i = 0; i < cant; i++) {
+                rangeColor.push(d3.interpolateYlOrRd(i / (cant - 1)));
             }
-            return rangeColor;
+            return rangeColor;*/
+            return ['#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb',
+                '#41b6c4', '#1d91c0', '#225ea8', '#253494',
+                '#081d58'];
         };
         this.formatValueSeperator = function (n) {
             if (d3__WEBPACK_IMPORTED_MODULE_1__["select"]('#byDensidadeCheckBox').property('checked')) {
@@ -64596,29 +64598,29 @@ var MapchartComponent = /** @class */ (function () {
                     }
                     return color(estColor);
                 })
-                    .attr('stroke', '#eeeeee')
+                    .attr('stroke', self.lineBorderColor)
                     .attr('d', path)
                     .on('mouseover', self.tipWorld.show)
                     .on('mouseout', function () {
                     d3__WEBPACK_IMPORTED_MODULE_1__["selectAll"]('#world-g-map path').each(function (d) {
                         if (d3__WEBPACK_IMPORTED_MODULE_1__["select"](this).attr('selected') !== 'true') {
-                            d3__WEBPACK_IMPORTED_MODULE_1__["select"](this).attr('stroke', '#eeeeee');
-                            d3__WEBPACK_IMPORTED_MODULE_1__["select"](this).attr('stroke-width', 2);
+                            d3__WEBPACK_IMPORTED_MODULE_1__["select"](this).attr('stroke', self.lineBorderColor);
+                            d3__WEBPACK_IMPORTED_MODULE_1__["select"](this).attr('stroke-width', 1);
                         }
                     });
                     self.tipWorld.hide();
                 })
                     .on('click', function (d) {
                     d3__WEBPACK_IMPORTED_MODULE_1__["selectAll"]('#world-g-map path').each(function () {
-                        d3__WEBPACK_IMPORTED_MODULE_1__["select"](this).attr('stroke', '#eeeeee');
+                        d3__WEBPACK_IMPORTED_MODULE_1__["select"](this).attr('stroke', self.lineBorderColor);
                         d3__WEBPACK_IMPORTED_MODULE_1__["select"](this).attr('stroke-width', 2);
                         d3__WEBPACK_IMPORTED_MODULE_1__["select"](this).attr('selected', 'false');
                     });
                     self.selectedCountry = d.properties.code;
                     self.loadWidgetCountry(self.selectedCountry, byDeaths, byDensidade);
                     d3__WEBPACK_IMPORTED_MODULE_1__["select"](this)
-                        .attr('stroke', '#007acc')
-                        .attr('stroke-width', 6)
+                        .attr('stroke', self.lineStrongerBorderColor)
+                        .attr('stroke-width', 5)
                         .attr('selected', 'true');
                 });
                 var widthTrans = Math.abs(container.width - mapG.node().getBoundingClientRect().width) / 2;
@@ -64627,8 +64629,8 @@ var MapchartComponent = /** @class */ (function () {
                 d3__WEBPACK_IMPORTED_MODULE_1__["selectAll"]('#world-g-map path').each(function (d) {
                     if (d.properties.code === self.selectedCountry) {
                         d3__WEBPACK_IMPORTED_MODULE_1__["select"](this)
-                            .attr('stroke', '#007acc')
-                            .attr('stroke-width', 6)
+                            .attr('stroke', self.lineStrongerBorderColor)
+                            .attr('stroke-width', 5)
                             .attr('selected', 'true');
                     }
                 });
@@ -64640,13 +64642,14 @@ var MapchartComponent = /** @class */ (function () {
                 var selfTemp = this;
                 d3__WEBPACK_IMPORTED_MODULE_1__["selectAll"]('#world-g-map path').each(function () {
                     if (d3__WEBPACK_IMPORTED_MODULE_1__["select"](this).attr('selected') !== 'true' && this === selfTemp) {
-                        d3__WEBPACK_IMPORTED_MODULE_1__["select"](this).attr('stroke', '#717171');
+                        // d3.select(this).attr('stroke', '#717171');
+                        d3__WEBPACK_IMPORTED_MODULE_1__["select"](this).attr('stroke', self.lineStrongerBorderColor);
                         d3__WEBPACK_IMPORTED_MODULE_1__["select"](this).attr('stroke-width', 3);
                     }
                 });
                 var labelTot = byDensidade === true ? 'Densidad casos' : 'Total casos';
                 var labelTotDeath = byDensidade === true ? 'Densidad muertes' : 'Total muertes';
-                return ('<div style="opacity:0.8;background-color:#8b0707;padding:7px;color:white">' +
+                return ('<div style="opacity:0.8;background-color:#253494;padding:7px;color:white">' +
                     '<text>País: </text><text style="font-weight: 800">' +
                     d.properties.name +
                     '</text><br/>' +
@@ -64679,7 +64682,7 @@ var MapchartComponent = /** @class */ (function () {
                 .attr('x', width / 1.7)
                 .attr('y', 20)
                 .attr('transform', 'scale(' + scaleValue + ')')
-                .attr('fill', '#aaaaaa')
+                .attr('fill', self.colorText)
                 .style('background-color', '#000000')
                 .attr('font-family', 'sans-serif')
                 .style('font-size', '23px')
@@ -64708,13 +64711,16 @@ var MapchartComponent = /** @class */ (function () {
                 .attr('font-family', 'sans-serif')
                 .attr('x', -42)
                 .attr('y', 20)
-                .attr('fill', '#aaaaaa')
+                .attr('fill', self.colorText)
                 .attr('text-anchor', 'start')
                 .attr('font-size', '20px')
                 .attr('font-weight', 'bold')
                 .text('Casos');
+            var currentScale = Math.min(scaleValue, (0.5 * height) / 200);
             var lastTick = 0;
-            g.attr('transform', 'translate(50, ' + height / 1.7 + ') scale(' + (0.5 * height) / 200 + ')')
+            g.attr('transform', 'translate(50, ' + (height - 160 * currentScale) + ') scale(' + currentScale + ')'
+            // 'translate(50, ' + height / 1.7 + ') scale(' + (0.5 * height) / 200 + ')'
+            )
                 .attr('class', 'legend')
                 .call(d3__WEBPACK_IMPORTED_MODULE_1__["axisRight"](yLegend)
                 .tickSize(0)
@@ -64903,10 +64909,10 @@ var MapchartComponent = /** @class */ (function () {
                     return color(stateColor);
                 })
                     .attr('d', path)
-                    .attr('stroke', '#eeeeee')
+                    .attr('stroke', self.lineBorderColor)
                     .on('mouseover', self.tipState.show)
                     .on('mouseout', function () {
-                    d3__WEBPACK_IMPORTED_MODULE_1__["select"](this).attr('stroke', '#eeeeee');
+                    d3__WEBPACK_IMPORTED_MODULE_1__["select"](this).attr('stroke', self.lineBorderColor);
                     self.tipState.hide();
                 });
                 var widthTrans = Math.min(Math.abs(width - mapG.node().getBoundingClientRect().width) * 1.8, width * 0.35);
@@ -64919,10 +64925,11 @@ var MapchartComponent = /** @class */ (function () {
                 .attr('class', 'd3-tip')
                 .html(function (d) {
                 // console.log(d, self.population);
-                d3__WEBPACK_IMPORTED_MODULE_1__["select"](this).attr('stroke', '#717171');
+                // d3.select(this).attr('stroke', '#717171');
+                d3__WEBPACK_IMPORTED_MODULE_1__["select"](this).attr('stroke', self.lineStrongerBorderColor);
                 var labelTot = byDensidade === true ? 'Densidad casos' : 'Total casos';
                 var labelTotDeath = byDensidade === true ? 'Densidad muertes' : 'Total muertes';
-                return ('<div style="opacity:0.8;background-color:#8b0707;padding:7px;color:white">' +
+                return ('<div style="opacity:0.8;background-color:#253494;padding:7px;color:white">' +
                     '<text>Estado: </text><text style="font-weight: 800">' +
                     d.properties.name +
                     '</text><br/>' +
@@ -64953,7 +64960,7 @@ var MapchartComponent = /** @class */ (function () {
                 .attr('x', width / (2.2 * scaleValue))
                 .attr('y', 20)
                 .attr('transform', 'scale(' + scaleValue + ')')
-                .attr('fill', '#aaaaaa')
+                .attr('fill', self.colorText)
                 .attr('font-family', 'sans-serif')
                 .style('font-size', '23px')
                 .style('font-weight', 'bold')
@@ -64984,7 +64991,7 @@ var MapchartComponent = /** @class */ (function () {
                 .attr('font-family', 'sans-serif')
                 .attr('x', -42)
                 .attr('y', 20)
-                .attr('fill', '#aaaaaa')
+                .attr('fill', self.colorText)
                 .attr('text-anchor', 'start')
                 .attr('font-size', '22px')
                 .attr('font-weight', 'bold')
@@ -65136,7 +65143,7 @@ var MapchartComponent = /** @class */ (function () {
                 svg.append('text')
                     .attr('x', width / 3.5)
                     .attr('y', margin.top)
-                    .attr('fill', '#aaaaaa')
+                    .attr('fill', self.colorText)
                     .attr('font-family', 'sans-serif')
                     .style('font-size', 'calc(2vh)')
                     .style('font-weight', 'bold')
@@ -65178,7 +65185,7 @@ var MapchartComponent = /** @class */ (function () {
                     .attr('x', 17)
                     .attr('y', function (d, i) { return i * gridSizeY; })
                     .style('text-anchor', 'end')
-                    .style('fill', '#aaaaaa')
+                    .style('fill', self.colorText)
                     .attr('transform', 'translate(0,' + gridSizeY / 1.5 + ')');
                 var heatMapG = scrollGDiv
                     .append('g')
@@ -65264,7 +65271,7 @@ var MapchartComponent = /** @class */ (function () {
                 legend.selectAll('text')
                     .data(legendRange)
                     .join('text')
-                    .attr('fill', '#aaaaaa')
+                    .attr('fill', self.colorText)
                     .attr('x', function (d, i) { return legendElementWidth * i; })
                     .attr('y', gridSizeY + 2)
                     .text(function (d, i) {
@@ -65279,7 +65286,7 @@ var MapchartComponent = /** @class */ (function () {
                 .attr('class', 'd3-tip')
                 .offset([20, -80])
                 .html(function (d) {
-                return ('<div style="opacity:0.8;background-color:#8b0707;padding:7px;color:white">' +
+                return ('<div style="opacity:0.8;background-color:#253494;padding:7px;color:white">' +
                     '<text style="font-weight: 800">' +
                     self.countriesNames[d.region] +
                     '</text></br><text>' +
@@ -65414,7 +65421,7 @@ var MapchartComponent = /** @class */ (function () {
                 svg.append('text')
                     .attr('x', width / 3.5)
                     .attr('y', margin.top)
-                    .attr('fill', '#aaaaaa')
+                    .attr('fill', self.colorText)
                     .attr('font-family', 'sans-serif')
                     .style('font-size', 'calc(2vh)')
                     .style('font-weight', 'bold')
@@ -65458,7 +65465,7 @@ var MapchartComponent = /** @class */ (function () {
                     .attr('x', 45)
                     .attr('y', function (d, i) { return i * gridSizeY; })
                     .style('text-anchor', 'end')
-                    .style('fill', '#aaaaaa')
+                    .style('fill', self.colorText)
                     .attr('transform', 'translate(0,' + gridSizeY / 1.5 + ')');
                 var heatMapG = scrollGDiv
                     .append('g')
@@ -65544,7 +65551,7 @@ var MapchartComponent = /** @class */ (function () {
                 legend.selectAll('text')
                     .data(legendRange)
                     .join('text')
-                    .attr('fill', '#aaaaaa')
+                    .attr('fill', self.colorText)
                     .attr('x', function (d, i) { return legendElementWidth * i; })
                     .attr('y', gridSizeY + 2)
                     .text(function (d, i) {
@@ -65574,7 +65581,7 @@ var MapchartComponent = /** @class */ (function () {
                 .attr('class', 'd3-tip')
                 .offset([20, -80])
                 .html(function (d) {
-                return ('<div style="opacity:0.8;background-color:#8b0707;padding:7px;color:white">' +
+                return ('<div style="opacity:0.8;background-color:#253494;padding:7px;color:white">' +
                     '<text style="font-weight: 800">' +
                     self.statesNames[d] +
                     '</text>' +

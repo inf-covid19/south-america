@@ -107,10 +107,14 @@ text{
 
 g text, g path, svg text {
   font-size: calc(1.3vh);
-  color: #aaaaaa;
+  color: rgb(0,0,0,0.87);
+  //color: #aaaaaa;
+  color: #1d1d1da8;
 }
 
 g.legend g text, g.legend text {
   font-size: calc(2.4vh);
-  color: #aaaaaa;
+  color: rgb(0,0,0,0.87);
+  //color: #aaaaaa;
+  color: #1d1d1da8;
 }

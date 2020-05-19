@@ -124,7 +124,8 @@ $bmd-radio-color-disabled-inverse: rgba(
 ); // dark theme spec: Disabled: #FFFFFF, Opacity  30%
 
 $white-color: #fff !default;
-$navbar-color: #555 !default;
+//$navbar-color: #555 !default;
+$navbar-color: #1d1d1da8 !default;
 $pills-color: $navbar-color !default;
 $black-color: #3C4858 !default;
 $link-color: $brand-primary;
