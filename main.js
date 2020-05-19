@@ -841,7 +841,7 @@ Object(_angular_platform_browser_dynamic__WEBPACK_IMPORTED_MODULE_1__["platformB
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! /home/m0rb1u5/south-america/src/main.ts */"./src/main.ts");
+module.exports = __webpack_require__(/*! /home/noa/Documents/PROJECTS/covid/dashboards/south-america/src/main.ts */"./src/main.ts");
 
 
 /***/ })
