@@ -44,7 +44,7 @@ export class MapchartComponent implements OnInit, AfterViewInit, OnDestroy {
 	];
 
 	statesByCountry = {
-		argentina: ['ba', 'caba', 'ca', 'ch', 'ct', 'cb', 'cr', 'er', 'fo', 'jy', 'lp', 'lr', 'mz', 'mi', 'nq', 'rn', 'sa', 'sj', 'sl', 'sc', 'sf', 'se', 'tf', 'tu', 'sindef'],
+		argentina: ['ba', 'caba', 'ca', 'ch', 'ct', 'cb', 'cr', 'er', 'fo', 'jy', 'lp', 'lr', 'mz', 'mi', 'nq', 'rn', 'sa', 'sj', 'sl', 'sc', 'sf', 'se', 'tf', 'tu'],
 		bolivia: ['lp',  'cb', 'sc', 'or', 'pt', 'tj', 'ch', 'bn', 'pn'],
 		brazil: ['ac', 'al', 'ap', 'am', 'ba', 'ce', 'df', 'es', 'go', 'ma', 'mt', 'ms', 'mg', 'pa', 'pb', 'pr', 'pe', 'pi', 'rj', 'rn', 'rs', 'ro', 'rr', 'sc', 'sp', 'se', 'to'],
 		chile: ['cl-ta', 'cl-an', 'cl-at', 'cl-co', 'cl-ar', 'cl-vs', 'cl-li', 'cl-ml', 'cl-bi', 'cl-ll', 'cl-ai', 'cl-ma', 'cl-rm', 'cl-lr', 'cl-ap', 'cl-nb'],
