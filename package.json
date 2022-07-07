@@ -51,7 +51,7 @@
     "jquery": "3.4.1",
     "jquery-slider": "0.0.1",
     "jquery-ui": "^1.12.1",
-    "moment": "2.24.0",
+    "moment": "2.29.4",
     "perfect-scrollbar": "^1.1.0",
     "popper.js": "1.15.0",
     "rxjs": "6.5.2",
