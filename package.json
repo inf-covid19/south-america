@@ -45,7 +45,7 @@
     "d3-format": "^1.4.3",
     "d3-tip": "^0.9.1",
     "date-fns": "^2.11.1",
-    "express": "4.17.1",
+    "express": "4.17.3",
     "googleapis": "40.0.0",
     "hammerjs": "2.0.8",
     "jquery": "3.4.1",
